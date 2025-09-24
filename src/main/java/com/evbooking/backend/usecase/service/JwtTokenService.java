@@ -69,7 +69,7 @@ public class JwtTokenService {
                 .setSubject(subject)
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
-                .setIssuer("ev-booking-backend")
+                .setIssuer("kash-save-backend")
                 .signWith(getSigningKey())
                 .compact();
     }
