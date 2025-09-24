@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: kash_staging_user
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-StaG1ng_P@ssw0rd_2024!}
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
       - postgres_staging_data:/var/lib/postgresql/data
     networks:
@@ -24,7 +24,7 @@ services:
     image: redis:7-alpine
     container_name: kash-save-staging-redis
     ports:
-      - "6380:6379"
+      - "6381:6379"
     volumes:
       - redis_staging_data:/data
     networks:
