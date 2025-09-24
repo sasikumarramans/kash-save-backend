@@ -18,7 +18,7 @@ services:
       interval: 15s
       timeout: 10s
       retries: 8
-      start_period: 90s  # Add this - crucial for Spring Boot
+      start_period: 90s
 
   redis:
     image: redis:7-alpine
@@ -92,4 +92,4 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.0.0/16
+        - subnet: 172.21.0.0/16  # Changed from 172.20.0.0/16 to avoid conflict
