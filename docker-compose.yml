@@ -1,0 +1,52 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: kash-save-postgres
+    environment:
+      POSTGRES_DB: kash_save_db
+      POSTGRES_USER: kash_user
+      POSTGRES_PASSWORD: kash_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - kash-save-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: kash-save-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - kash-save-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kash-save-app
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: kash_user
+      DB_PASSWORD: kash_password
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - kash-save-network
+
+volumes:
+  postgres_data:
+
+networks:
+  kash-save-network:
+    driver: bridge

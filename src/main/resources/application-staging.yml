@@ -1,0 +1,95 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/${DB_NAME:kash_save_staging_db}?connectTimeout=10&socketTimeout=30&loginTimeout=10
+    username: ${DB_USERNAME:kash_staging_user}
+    password: ${DB_PASSWORD:StaG1ng_P@ssw0rd_2024!}
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 1
+      connection-timeout: 60000
+      validation-timeout: 5000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      initialization-fail-timeout: 60000
+      connection-test-query: SELECT 1
+      leak-detection-threshold: 60000
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 20
+          order_inserts: true
+          order_updates: true
+
+  liquibase:
+    contexts: staging
+
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET_KEY:staging-super-secret-key-change-in-production}
+      expiration: ${JWT_EXPIRATION:3600000}
+
+  cache:
+    type: redis
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:staging@kashsave.com}
+    password: ${MAIL_PASSWORD:staging_mail_password}
+
+logging:
+  level:
+    com.kashsave: INFO
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  file:
+    name: logs/kash-save-staging.log
+  logback:
+    rollingpolicy:
+      max-file-size: 100MB
+      max-history: 30
+
+management:
+  health:
+    mail:
+      enabled: false  # This is the key addition
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:https://staging.kashsave.com,https://staging-admin.kashsave.com}
+  file-upload:
+    max-size: ${MAX_FILE_SIZE:5MB}
+    upload-path: ${UPLOAD_PATH:/app/uploads}
+  payment:
+    stripe:
+      public-key: ${STRIPE_PUBLIC_KEY_STAGING:pk_test_staging}
+      secret-key: ${STRIPE_SECRET_KEY_STAGING:sk_test_staging}
+  notification:
+    enabled: true
+    webhook-url: ${WEBHOOK_URL:https://staging-webhook.kashsave.com}
