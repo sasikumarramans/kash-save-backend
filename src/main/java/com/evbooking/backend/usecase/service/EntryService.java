@@ -3,6 +3,7 @@ package com.evbooking.backend.usecase.service;
 import com.evbooking.backend.domain.model.Entry;
 import com.evbooking.backend.domain.model.EntryType;
 import com.evbooking.backend.domain.repository.EntryRepository;
+import com.evbooking.backend.domain.service.EntryDomainService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;

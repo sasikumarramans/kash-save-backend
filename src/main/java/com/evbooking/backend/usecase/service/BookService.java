@@ -3,6 +3,7 @@ package com.evbooking.backend.usecase.service;
 import com.evbooking.backend.domain.model.Book;
 import com.evbooking.backend.domain.repository.BookRepository;
 import com.evbooking.backend.domain.repository.EntryRepository;
+import com.evbooking.backend.domain.service.BookDomainService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,22 +18,16 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final EntryRepository entryRepository;
+    private final BookDomainService bookDomainService;
 
-    public BookService(BookRepository bookRepository, EntryRepository entryRepository) {
+    public BookService(BookRepository bookRepository, EntryRepository entryRepository, BookDomainService bookDomainService) {
         this.bookRepository = bookRepository;
         this.entryRepository = entryRepository;
+        this.bookDomainService = bookDomainService;
     }
 
     public Book createBook(String name, String description, Long userId) {
-        if (name == null || name.trim().isEmpty()) {
-            throw new RuntimeException("Book name is required");
-        }
-
-        if (userId == null) {
-            throw new RuntimeException("User ID is required");
-        }
-
-        Book book = new Book(name.trim(), description, userId);
+        Book book = bookDomainService.createBook(name, description, userId);
         return bookRepository.save(book);
     }
 
