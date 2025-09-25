@@ -48,7 +48,7 @@ jobs:
       run: |
         HOST=${{ github.event.inputs.environment == 'production' && secrets.PRODUCTION_HOST || secrets.STAGING_HOST }}
         USER=${{ github.event.inputs.environment == 'production' && secrets.PRODUCTION_USER || secrets.STAGING_USER }}
-        ENV_DIR=${{ github.event.inputs.environment == 'production' && 'ev-booking-production' || 'ev-booking-staging' }}
+        ENV_DIR=${{ github.event.inputs.environment == 'production' && 'kash-save-production' || 'kash-save-staging' }}
         COMPOSE_FILE=${{ github.event.inputs.environment == 'production' && 'docker-compose.production.yml' || 'docker-compose.staging.yml' }}
 
         ssh $USER@$HOST "

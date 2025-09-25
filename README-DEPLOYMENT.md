@@ -179,8 +179,8 @@ curl http://localhost:8082/api/actuator/metrics
 
 ### Log Locations
 - Development: Console output
-- Staging: `/app/logs/ev-booking-staging.log`
-- Production: `/app/logs/ev-booking-production.log`
+- Staging: `/app/logs/kash-save-staging.log`
+- Production: `/app/logs/kash-save-production.log`
 
 ## Backup & Recovery
 

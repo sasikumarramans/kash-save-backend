@@ -17,7 +17,7 @@ docker-compose up -d
 
 Use this static client token for all auth endpoints:
 ```
-X-Client-Token: ev-booking-client-2024-v1-static-token
+X-Client-Token: kash-save-client-2024-v1-static-token
 ```
 
 ## API Testing Steps
@@ -34,7 +34,7 @@ curl -X GET http://localhost:8080/api/auth/generate-client-token \
 ```bash
 curl -X POST http://localhost:8080/api/auth/send-otp \
   -H "Content-Type: application/json" \
-  -H "X-Client-Token: ev-booking-client-2024-v1-static-token" \
+  -H "X-Client-Token: kash-save-client-2024-v1-static-token" \
   -d '{
     "mobileNumber": "9876543210"
   }'
@@ -58,7 +58,7 @@ curl -X POST http://localhost:8080/api/auth/send-otp \
 ```bash
 curl -X POST http://localhost:8080/api/auth/verify-otp \
   -H "Content-Type: application/json" \
-  -H "X-Client-Token: ev-booking-client-2024-v1-static-token" \
+  -H "X-Client-Token: kash-save-client-2024-v1-static-token" \
   -d '{
     "mobileNumber": "9876543210",
     "otpCode": "1234"
@@ -127,7 +127,7 @@ The system accepts these formats:
 ```bash
 curl -X POST http://localhost:8080/api/auth/verify-otp \
   -H "Content-Type: application/json" \
-  -H "X-Client-Token: ev-booking-client-2024-v1-static-token" \
+  -H "X-Client-Token: kash-save-client-2024-v1-static-token" \
   -d '{
     "mobileNumber": "9876543210",
     "otpCode": "0000"

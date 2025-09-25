@@ -1,5 +1,6 @@
 package com.evbooking.backend.infrastructure.security;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,16 +11,21 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
 import java.util.List;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class SecurityConfig implements WebMvcConfigurer {
 
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
+    @Value("${app.upload.dir:uploads}")
+    private String uploadDir;
 
     public SecurityConfig(JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint,
                          JwtAuthenticationFilter jwtAuthenticationFilter) {
@@ -38,6 +44,7 @@ public class SecurityConfig {
                 // Public endpoints - these are relative to servlet context path
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/public/**").permitAll()
+                .requestMatchers("/uploads/**").permitAll() // Allow access to uploaded files
 
                 // Actuator endpoints
                 .requestMatchers("/actuator/health").permitAll()
@@ -96,5 +103,12 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
 
         return source;
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Serve uploaded files
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:" + uploadDir + "/");
     }
 }

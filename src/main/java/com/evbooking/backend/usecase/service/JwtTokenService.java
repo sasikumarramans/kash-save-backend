@@ -168,13 +168,13 @@ public class JwtTokenService {
     public String generateClientApiToken() {
         Map<String, Object> claims = new HashMap<>();
         claims.put("tokenType", "CLIENT_API");
-        claims.put("clientId", "ev-booking-mobile");
+        claims.put("clientId", "kash-save-mobile");
         claims.put("tokenId", UUID.randomUUID().toString());
 
         // Long expiration for client API token (1 year)
         long clientTokenExpiration = 365L * 24 * 60 * 60 * 1000;
 
-        return createToken(claims, "ev-booking-client", clientTokenExpiration);
+        return createToken(claims, "kash-save-client", clientTokenExpiration);
     }
 
     public boolean isClientApiToken(String token) {

@@ -11,7 +11,7 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  - job_name: 'ev-booking-backend'
+  - job_name: 'kash-save-backend'
     static_configs:
       - targets: ['app:8080']
     metrics_path: '/api/actuator/prometheus'

@@ -114,19 +114,19 @@ sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.0/docker
 sudo chmod +x /usr/local/bin/docker-compose
 
 # Create application directories
-mkdir -p ~/ev-booking-staging/{logs,uploads,ssl}
-mkdir -p ~/ev-booking-staging/backups
+mkdir -p ~/kash-save-staging/{logs,uploads,ssl}
+mkdir -p ~/kash-save-staging/backups
 ```
 
 #### Production Server Setup
 ```bash
 # Same as staging, plus:
-mkdir -p ~/ev-booking-production/{logs,uploads,ssl}
-mkdir -p ~/ev-booking-production/backups
-mkdir -p ~/ev-booking-production/monitoring
+mkdir -p ~/kash-save-production/{logs,uploads,ssl}
+mkdir -p ~/kash-save-production/backups
+mkdir -p ~/kash-save-production/monitoring
 
 # Install SSL certificates
-# Place your keystore.p12 in ~/ev-booking-production/ssl/
+# Place your keystore.p12 in ~/kash-save-production/ssl/
 ```
 
 ### 3. GitHub Environments
@@ -241,7 +241,7 @@ docker-compose -f docker-compose.production.yml exec postgres pg_isready
 #### SSL Issues (Production)
 ```bash
 # Verify keystore file exists
-ls -la ~/ev-booking-production/ssl/keystore.p12
+ls -la ~/kash-save-production/ssl/keystore.p12
 
 # Check keystore password
 openssl pkcs12 -info -in ssl/keystore.p12

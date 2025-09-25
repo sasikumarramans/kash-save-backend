@@ -32,6 +32,11 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByUsername(String username) {
+        return jpaUserRepository.findByUsername(username).map(this::toDomain);
+    }
+
+    @Override
     public User save(User user) {
         UserEntity entity = toEntity(user);
         UserEntity saved = jpaUserRepository.save(entity);
@@ -53,6 +58,11 @@ public class UserRepositoryImpl implements UserRepository {
         return jpaUserRepository.existsByPhoneNumber(phoneNumber);
     }
 
+    @Override
+    public boolean existsByUsername(String username) {
+        return jpaUserRepository.existsByUsername(username);
+    }
+
     private User toDomain(UserEntity entity) {
         User user = new User();
         user.setId(entity.getId());
@@ -61,6 +71,8 @@ public class UserRepositoryImpl implements UserRepository {
         user.setFirstName(entity.getFirstName());
         user.setLastName(entity.getLastName());
         user.setPhoneNumber(entity.getPhoneNumber());
+        user.setUsername(entity.getUsername());
+        user.setProfileImageUrl(entity.getProfileImageUrl());
         user.setRole(entity.getRole());
         user.setStatus(entity.getStatus());
         user.setCreatedAt(entity.getCreatedAt());
@@ -76,6 +88,8 @@ public class UserRepositoryImpl implements UserRepository {
         entity.setFirstName(user.getFirstName());
         entity.setLastName(user.getLastName());
         entity.setPhoneNumber(user.getPhoneNumber());
+        entity.setUsername(user.getUsername());
+        entity.setProfileImageUrl(user.getProfileImageUrl());
         entity.setRole(user.getRole());
         entity.setStatus(user.getStatus());
         entity.setCreatedAt(user.getCreatedAt());

@@ -11,7 +11,7 @@ on:
         default: ''
 
 env:
-  DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/ev-booking-backend
+  DOCKER_IMAGE: ${{ secrets.DOCKER_USERNAME }}/kash-save-backend
 
 jobs:
   pre-deployment-checks:
@@ -82,7 +82,7 @@ jobs:
     - name: Create deployment directory on production server
       run: |
         ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} '
-          mkdir -p ~/ev-booking-production/backups
+          mkdir -p ~/kash-save-production/backups
         '
 
     - name: Copy deployment files to production server
@@ -94,12 +94,12 @@ jobs:
                scripts/deployment/deploy-production.sh \
                scripts/backup/ \
                .env.production.example \
-               ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }}:~/ev-booking-production/
+               ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }}:~/kash-save-production/
 
     - name: Create environment file on production server
       run: |
         ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} '
-          cd ~/ev-booking-production
+          cd ~/kash-save-production
           cat > .env.production << EOF
           POSTGRES_DB=${{ secrets.PRODUCTION_POSTGRES_DB }}
           POSTGRES_USER=${{ secrets.PRODUCTION_POSTGRES_USER }}
@@ -124,7 +124,7 @@ jobs:
     - name: Update Docker image tag in compose file
       run: |
         ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} '
-          cd ~/ev-booking-production
+          cd ~/kash-save-production
           sed -i "s|build:|image: ${{ env.DOCKER_IMAGE }}:prod-${{ github.sha }}|g" docker-compose.production.yml
           sed -i "/dockerfile:/d" docker-compose.production.yml
           sed -i "/context:/d" docker-compose.production.yml
@@ -133,7 +133,7 @@ jobs:
     - name: Backup current production
       run: |
         ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} '
-          cd ~/ev-booking-production
+          cd ~/kash-save-production
 
           # Create backup directory with timestamp
           BACKUP_DIR="backups/backup-$(date +%Y%m%d-%H%M%S)"
@@ -157,7 +157,7 @@ jobs:
     - name: Deploy to production with blue-green strategy
       run: |
         ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} '
-          cd ~/ev-booking-production
+          cd ~/kash-save-production
           chmod +x deploy-production.sh
           ./deploy-production.sh
         '
@@ -295,7 +295,7 @@ jobs:
     - name: Perform emergency rollback
       run: |
         ssh ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} '
-          cd ~/ev-booking-production
+          cd ~/kash-save-production
 
           echo "EMERGENCY: Rolling back production deployment..."
 

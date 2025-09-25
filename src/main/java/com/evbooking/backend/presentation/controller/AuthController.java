@@ -72,6 +72,8 @@ public class AuthController {
                 result.getUser().getEmail(),
                 result.getUser().getFirstName(),
                 result.getUser().getLastName(),
+                result.getUser().getUsername(),
+                result.getUser().getProfileImageUrl(),
                 result.getUser().getRole().name(),
                 result.getAccessToken(),
                 result.getRefreshToken()

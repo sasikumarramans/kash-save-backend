@@ -19,6 +19,10 @@
             <column name="phone_number" type="VARCHAR(15)">
                 <constraints nullable="false" unique="true"/>
             </column>
+            <column name="username" type="VARCHAR(50)">
+                <constraints unique="true"/>
+            </column>
+            <column name="profile_image_url" type="VARCHAR(500)"/>
             <column name="role" type="VARCHAR(20)">
                 <constraints nullable="false"/>
             </column>
@@ -48,6 +52,10 @@
 
         <createIndex tableName="users" indexName="idx_users_status">
             <column name="status"/>
+        </createIndex>
+
+        <createIndex tableName="users" indexName="idx_users_username">
+            <column name="username"/>
         </createIndex>
     </changeSet>
 

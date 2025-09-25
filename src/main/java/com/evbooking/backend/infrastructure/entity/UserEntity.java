@@ -27,6 +27,12 @@ public class UserEntity {
     @Column(name = "phone_number", unique = true, nullable = false, length = 15)
     private String phoneNumber;
 
+    @Column(unique = true, length = 50)
+    private String username;
+
+    @Column(name = "profile_image_url", length = 500)
+    private String profileImageUrl;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserRole role;
@@ -61,6 +67,12 @@ public class UserEntity {
 
     public String getPhoneNumber() { return phoneNumber; }
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
+    public String getProfileImageUrl() { return profileImageUrl; }
+    public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
 
     public UserRole getRole() { return role; }
     public void setRole(UserRole role) { this.role = role; }

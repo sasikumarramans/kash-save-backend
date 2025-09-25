@@ -1,44 +1,41 @@
-package com.evbooking.backend.domain.model;
+package com.evbooking.backend.presentation.dto;
 
 import java.time.LocalDateTime;
 
-public class User {
+public class UserProfileResponse {
     private Long id;
     private String email;
-    private String password;
     private String firstName;
     private String lastName;
     private String phoneNumber;
     private String username;
     private String profileImageUrl;
-    private UserRole role;
-    private UserStatus status;
+    private String role;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public User() {}
+    public UserProfileResponse() {}
 
-    public User(String email, String password, String firstName, String lastName, String phoneNumber) {
+    public UserProfileResponse(Long id, String email, String firstName, String lastName,
+                             String phoneNumber, String username, String profileImageUrl,
+                             String role, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.id = id;
         this.email = email;
-        this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
         this.phoneNumber = phoneNumber;
-        this.role = UserRole.CUSTOMER;
-        this.status = UserStatus.ACTIVE;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.username = username;
+        this.profileImageUrl = profileImageUrl;
+        this.role = role;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
-
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
 
     public String getFirstName() { return firstName; }
     public void setFirstName(String firstName) { this.firstName = firstName; }
@@ -55,11 +52,8 @@ public class User {
     public String getProfileImageUrl() { return profileImageUrl; }
     public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
 
-    public UserRole getRole() { return role; }
-    public void setRole(UserRole role) { this.role = role; }
-
-    public UserStatus getStatus() { return status; }
-    public void setStatus(UserStatus status) { this.status = status; }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
@@ -75,14 +69,6 @@ public class User {
         } else if (lastName != null) {
             return lastName;
         }
-        return phoneNumber; // fallback to phone number
-    }
-
-    public boolean isActive() {
-        return status == UserStatus.ACTIVE;
-    }
-
-    public boolean isAdmin() {
-        return role == UserRole.ADMIN;
+        return phoneNumber;
     }
 }
