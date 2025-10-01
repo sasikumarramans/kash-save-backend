@@ -22,12 +22,12 @@ public class BookDomainService {
         }
     }
 
-    public Book createBook(String name, String description, Long userId) {
+    public Book createBook(String name, String description, String currency, Long userId) {
         validateBookCreation(name, userId);
-        return new Book(name.trim(), description, userId);
+        return new Book(name.trim(), description, currency, userId);
     }
 
     public Book createBook(String name, Long userId) {
-        return createBook(name, null, userId);
+        return createBook(name, null, null, userId);
     }
 }

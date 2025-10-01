@@ -22,6 +22,9 @@
             <column name="amount" type="DECIMAL(15,2)">
                 <constraints nullable="false"/>
             </column>
+            <column name="currency" type="VARCHAR(3)" defaultValue="INR">
+                <constraints nullable="false"/>
+            </column>
             <column name="date_time" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
@@ -63,6 +66,10 @@
         <createIndex tableName="entries" indexName="idx_entries_book_id_type">
             <column name="book_id"/>
             <column name="type"/>
+        </createIndex>
+
+        <createIndex tableName="entries" indexName="idx_entries_currency">
+            <column name="currency"/>
         </createIndex>
     </changeSet>
 

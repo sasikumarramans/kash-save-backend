@@ -9,6 +9,7 @@ public class BookResponse {
     private Long id;
     private String name;
     private String description;
+    private String currency;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
@@ -24,19 +25,21 @@ public class BookResponse {
 
     public BookResponse() {}
 
-    public BookResponse(Long id, String name, String description, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public BookResponse(Long id, String name, String description, String currency, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.name = name;
         this.description = description;
+        this.currency = currency;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
-    public BookResponse(Long id, String name, String description, LocalDateTime createdAt, LocalDateTime updatedAt,
+    public BookResponse(Long id, String name, String description, String currency, LocalDateTime createdAt, LocalDateTime updatedAt,
                        BigDecimal totalExpense, BigDecimal totalIncome, LocalDateTime lastEntryDateTime) {
         this.id = id;
         this.name = name;
         this.description = description;
+        this.currency = currency;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.totalExpense = totalExpense;
@@ -52,6 +55,9 @@ public class BookResponse {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

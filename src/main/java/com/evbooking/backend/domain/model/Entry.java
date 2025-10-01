@@ -9,17 +9,19 @@ public class Entry {
     private EntryType type;
     private String name;
     private BigDecimal amount;
+    private String currency;
     private LocalDateTime dateTime;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public Entry() {}
 
-    public Entry(Long bookId, EntryType type, String name, BigDecimal amount, LocalDateTime dateTime) {
+    public Entry(Long bookId, EntryType type, String name, BigDecimal amount, String currency, LocalDateTime dateTime) {
         this.bookId = bookId;
         this.type = type;
         this.name = name;
         this.amount = amount;
+        this.currency = currency != null ? currency : "INR";
         this.dateTime = dateTime;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
@@ -39,6 +41,9 @@ public class Entry {
 
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
+
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
 
     public LocalDateTime getDateTime() { return dateTime; }
     public void setDateTime(LocalDateTime dateTime) { this.dateTime = dateTime; }

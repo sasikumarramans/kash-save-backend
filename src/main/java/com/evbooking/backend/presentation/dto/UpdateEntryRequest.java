@@ -18,15 +18,19 @@ public class UpdateEntryRequest {
     @DecimalMin(value = "0.01", message = "Amount must be greater than zero")
     private BigDecimal amount;
 
+    @Size(max = 3, message = "Currency must be a valid 3-letter code")
+    private String currency;
+
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dateTime;
 
     public UpdateEntryRequest() {}
 
-    public UpdateEntryRequest(EntryType type, String name, BigDecimal amount, LocalDateTime dateTime) {
+    public UpdateEntryRequest(EntryType type, String name, BigDecimal amount, String currency, LocalDateTime dateTime) {
         this.type = type;
         this.name = name;
         this.amount = amount;
+        this.currency = currency;
         this.dateTime = dateTime;
     }
 
@@ -38,6 +42,9 @@ public class UpdateEntryRequest {
 
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
+
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
 
     public LocalDateTime getDateTime() { return dateTime; }
     public void setDateTime(LocalDateTime dateTime) { this.dateTime = dateTime; }

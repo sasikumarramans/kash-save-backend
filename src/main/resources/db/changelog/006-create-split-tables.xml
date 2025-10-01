@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="006-create-groups-table" author="system">
+        <createTable tableName="groups">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="admin_user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency" type="VARCHAR(3)" defaultValue="INR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="groups" baseColumnNames="admin_user_id"
+                                 constraintName="fk_groups_admin_user"
+                                 referencedTableName="users" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="006-create-group-members-table" author="system">
+        <createTable tableName="group_members">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="group_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_admin" type="BOOLEAN" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="joined_at" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="group_members" baseColumnNames="group_id"
+                                 constraintName="fk_group_members_group"
+                                 referencedTableName="groups" referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint baseTableName="group_members" baseColumnNames="user_id"
+                                 constraintName="fk_group_members_user"
+                                 referencedTableName="users" referencedColumnNames="id"/>
+
+        <addUniqueConstraint tableName="group_members" columnNames="group_id,user_id"
+                             constraintName="uk_group_members_group_user"/>
+    </changeSet>
+
+    <changeSet id="006-create-split-expenses-table" author="system">
+        <createTable tableName="split_expenses">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_amount" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency" type="VARCHAR(3)" defaultValue="INR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="paid_by_user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="group_id" type="BIGINT"/>
+            <column name="split_type" type="VARCHAR(20)" defaultValue="EQUAL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="split_expenses" baseColumnNames="paid_by_user_id"
+                                 constraintName="fk_split_expenses_paid_by_user"
+                                 referencedTableName="users" referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="split_expenses" baseColumnNames="created_by_user_id"
+                                 constraintName="fk_split_expenses_created_by_user"
+                                 referencedTableName="users" referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="split_expenses" baseColumnNames="group_id"
+                                 constraintName="fk_split_expenses_group"
+                                 referencedTableName="groups" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="006-create-split-participants-table" author="system">
+        <createTable tableName="split_participants">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="split_expense_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount_owed" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="split_value" type="DECIMAL(12,4)"/>
+            <column name="is_settled" type="BOOLEAN" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="settled_at" type="TIMESTAMP"/>
+            <column name="created_at" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="split_participants" baseColumnNames="split_expense_id"
+                                 constraintName="fk_split_participants_expense"
+                                 referencedTableName="split_expenses" referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint baseTableName="split_participants" baseColumnNames="user_id"
+                                 constraintName="fk_split_participants_user"
+                                 referencedTableName="users" referencedColumnNames="id"/>
+
+        <addUniqueConstraint tableName="split_participants" columnNames="split_expense_id,user_id"
+                             constraintName="uk_split_participants_expense_user"/>
+    </changeSet>
+
+    <changeSet id="006-create-settlements-table" author="system">
+        <createTable tableName="settlements">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="from_user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="to_user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="DECIMAL(12,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency" type="VARCHAR(3)" defaultValue="INR">
+                <constraints nullable="false"/>
+            </column>
+            <column name="split_expense_id" type="BIGINT"/>
+            <column name="notes" type="TEXT"/>
+            <column name="settlement_date" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recorded_by_user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="settlements" baseColumnNames="from_user_id"
+                                 constraintName="fk_settlements_from_user"
+                                 referencedTableName="users" referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="settlements" baseColumnNames="to_user_id"
+                                 constraintName="fk_settlements_to_user"
+                                 referencedTableName="users" referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="settlements" baseColumnNames="split_expense_id"
+                                 constraintName="fk_settlements_split_expense"
+                                 referencedTableName="split_expenses" referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="settlements" baseColumnNames="recorded_by_user_id"
+                                 constraintName="fk_settlements_recorded_by_user"
+                                 referencedTableName="users" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="006-create-split-activities-table" author="system">
+        <createTable tableName="split_activities">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="activity_type" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="activity_data" type="TEXT"/>
+            <column name="related_user_id" type="BIGINT"/>
+            <column name="group_id" type="BIGINT"/>
+            <column name="split_expense_id" type="BIGINT"/>
+            <column name="created_at" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="split_activities" baseColumnNames="user_id"
+                                 constraintName="fk_split_activities_user"
+                                 referencedTableName="users" referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="split_activities" baseColumnNames="related_user_id"
+                                 constraintName="fk_split_activities_related_user"
+                                 referencedTableName="users" referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="split_activities" baseColumnNames="group_id"
+                                 constraintName="fk_split_activities_group"
+                                 referencedTableName="groups" referencedColumnNames="id"/>
+
+        <addForeignKeyConstraint baseTableName="split_activities" baseColumnNames="split_expense_id"
+                                 constraintName="fk_split_activities_split_expense"
+                                 referencedTableName="split_expenses" referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="006-create-indexes" author="system">
+        <createIndex tableName="groups" indexName="idx_groups_admin_user">
+            <column name="admin_user_id"/>
+        </createIndex>
+
+        <createIndex tableName="group_members" indexName="idx_group_members_user">
+            <column name="user_id"/>
+        </createIndex>
+
+        <createIndex tableName="split_expenses" indexName="idx_split_expenses_paid_by_user">
+            <column name="paid_by_user_id"/>
+        </createIndex>
+
+        <createIndex tableName="split_expenses" indexName="idx_split_expenses_created_by_user">
+            <column name="created_by_user_id"/>
+        </createIndex>
+
+        <createIndex tableName="split_expenses" indexName="idx_split_expenses_group">
+            <column name="group_id"/>
+        </createIndex>
+
+        <createIndex tableName="split_participants" indexName="idx_split_participants_user">
+            <column name="user_id"/>
+        </createIndex>
+
+        <createIndex tableName="settlements" indexName="idx_settlements_from_user">
+            <column name="from_user_id"/>
+        </createIndex>
+
+        <createIndex tableName="settlements" indexName="idx_settlements_to_user">
+            <column name="to_user_id"/>
+        </createIndex>
+
+        <createIndex tableName="split_activities" indexName="idx_split_activities_user">
+            <column name="user_id"/>
+        </createIndex>
+
+        <createIndex tableName="split_activities" indexName="idx_split_activities_created_at">
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

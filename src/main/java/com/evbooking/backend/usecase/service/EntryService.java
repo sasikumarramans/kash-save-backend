@@ -25,7 +25,7 @@ public class EntryService {
     }
 
     public Entry createEntry(Long bookId, EntryType type, String name, BigDecimal amount,
-                           LocalDateTime dateTime, Long userId) {
+                           String currency, LocalDateTime dateTime, Long userId) {
         if (bookId == null) {
             throw new RuntimeException("Book ID is required");
         }
@@ -54,12 +54,12 @@ public class EntryService {
             throw new RuntimeException("You can only add entries to your own books");
         }
 
-        Entry entry = new Entry(bookId, type, name.trim(), amount, dateTime);
+        Entry entry = new Entry(bookId, type, name.trim(), amount, currency, dateTime);
         return entryRepository.save(entry);
     }
 
     public Entry updateEntry(Long entryId, EntryType type, String name, BigDecimal amount,
-                           LocalDateTime dateTime, Long userId) {
+                           String currency, LocalDateTime dateTime, Long userId) {
         if (entryId == null) {
             throw new RuntimeException("Entry ID is required");
         }
@@ -85,6 +85,10 @@ public class EntryService {
 
         if (amount != null && amount.compareTo(BigDecimal.ZERO) > 0) {
             entry.setAmount(amount);
+        }
+
+        if (currency != null && !currency.trim().isEmpty()) {
+            entry.setCurrency(currency.trim());
         }
 
         if (dateTime != null) {

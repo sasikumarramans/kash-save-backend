@@ -12,11 +12,15 @@ public class CreateBookRequest {
     @Size(max = 500, message = "Description must not exceed 500 characters")
     private String description;
 
+    @Size(max = 3, message = "Currency must be a valid 3-letter code")
+    private String currency;
+
     public CreateBookRequest() {}
 
-    public CreateBookRequest(String name, String description) {
+    public CreateBookRequest(String name, String description, String currency) {
         this.name = name;
         this.description = description;
+        this.currency = currency;
     }
 
     public String getName() { return name; }
@@ -24,4 +28,7 @@ public class CreateBookRequest {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
 }

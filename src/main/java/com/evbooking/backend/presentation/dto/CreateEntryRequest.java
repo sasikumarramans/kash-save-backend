@@ -26,17 +26,21 @@ public class CreateEntryRequest {
     @DecimalMin(value = "0.01", message = "Amount must be greater than zero")
     private BigDecimal amount;
 
+    @Size(max = 3, message = "Currency must be a valid 3-letter code")
+    private String currency;
+
     @NotNull(message = "Date time is required")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dateTime;
 
     public CreateEntryRequest() {}
 
-    public CreateEntryRequest(Long bookId, EntryType type, String name, BigDecimal amount, LocalDateTime dateTime) {
+    public CreateEntryRequest(Long bookId, EntryType type, String name, BigDecimal amount, String currency, LocalDateTime dateTime) {
         this.bookId = bookId;
         this.type = type;
         this.name = name;
         this.amount = amount;
+        this.currency = currency;
         this.dateTime = dateTime;
     }
 
@@ -51,6 +55,9 @@ public class CreateEntryRequest {
 
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
+
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
 
     public LocalDateTime getDateTime() { return dateTime; }
     public void setDateTime(LocalDateTime dateTime) { this.dateTime = dateTime; }

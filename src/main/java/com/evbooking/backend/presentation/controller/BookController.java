@@ -35,12 +35,13 @@ public class BookController {
                     .body(ApiResponse.error("User not authenticated"));
             }
 
-            Book book = bookService.createBook(request.getName(), request.getDescription(), userId);
+            Book book = bookService.createBook(request.getName(), request.getDescription(), request.getCurrency(), userId);
 
             BookResponse response = new BookResponse(
                 book.getId(),
                 book.getName(),
                 book.getDescription(),
+                book.getCurrency(),
                 book.getCreatedAt(),
                 book.getUpdatedAt()
             );
@@ -75,6 +76,7 @@ public class BookController {
                         book.getId(),
                         book.getName(),
                         book.getDescription(),
+                        book.getCurrency(),
                         book.getCreatedAt(),
                         book.getUpdatedAt(),
                         summary.getTotalExpense(),
@@ -148,6 +150,7 @@ public class BookController {
                 book.getId(),
                 book.getName(),
                 book.getDescription(),
+                book.getCurrency(),
                 book.getCreatedAt(),
                 book.getUpdatedAt(),
                 summary.getTotalExpense(),

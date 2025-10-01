@@ -40,6 +40,7 @@ public class EntryController {
                 request.getType(),
                 request.getName(),
                 request.getAmount(),
+                request.getCurrency(),
                 request.getDateTime(),
                 userId
             );
@@ -50,6 +51,7 @@ public class EntryController {
                 entry.getType(),
                 entry.getName(),
                 entry.getAmount(),
+                entry.getCurrency(),
                 entry.getDateTime(),
                 entry.getCreatedAt(),
                 entry.getUpdatedAt()
@@ -79,6 +81,7 @@ public class EntryController {
                 request.getType(),
                 request.getName(),
                 request.getAmount(),
+                request.getCurrency(),
                 request.getDateTime(),
                 userId
             );
@@ -89,6 +92,7 @@ public class EntryController {
                 entry.getType(),
                 entry.getName(),
                 entry.getAmount(),
+                entry.getCurrency(),
                 entry.getDateTime(),
                 entry.getCreatedAt(),
                 entry.getUpdatedAt()
@@ -144,6 +148,7 @@ public class EntryController {
                 entry.getType(),
                 entry.getName(),
                 entry.getAmount(),
+                entry.getCurrency(),
                 entry.getDateTime(),
                 entry.getCreatedAt(),
                 entry.getUpdatedAt()
@@ -180,6 +185,7 @@ public class EntryController {
                     entry.getType(),
                     entry.getName(),
                     entry.getAmount(),
+                    entry.getCurrency(),
                     entry.getDateTime(),
                     entry.getCreatedAt(),
                     entry.getUpdatedAt()

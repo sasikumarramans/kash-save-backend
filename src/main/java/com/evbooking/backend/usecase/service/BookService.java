@@ -26,8 +26,8 @@ public class BookService {
         this.bookDomainService = bookDomainService;
     }
 
-    public Book createBook(String name, String description, Long userId) {
-        Book book = bookDomainService.createBook(name, description, userId);
+    public Book createBook(String name, String description, String currency, Long userId) {
+        Book book = bookDomainService.createBook(name, description, currency, userId);
         return bookRepository.save(book);
     }
 

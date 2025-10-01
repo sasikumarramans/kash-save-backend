@@ -12,6 +12,7 @@ public class EntryResponse {
     private EntryType type;
     private String name;
     private BigDecimal amount;
+    private String currency;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime dateTime;
@@ -24,13 +25,14 @@ public class EntryResponse {
 
     public EntryResponse() {}
 
-    public EntryResponse(Long id, Long bookId, EntryType type, String name, BigDecimal amount,
+    public EntryResponse(Long id, Long bookId, EntryType type, String name, BigDecimal amount, String currency,
                         LocalDateTime dateTime, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.bookId = bookId;
         this.type = type;
         this.name = name;
         this.amount = amount;
+        this.currency = currency;
         this.dateTime = dateTime;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -50,6 +52,9 @@ public class EntryResponse {
 
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
+
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
 
     public LocalDateTime getDateTime() { return dateTime; }
     public void setDateTime(LocalDateTime dateTime) { this.dateTime = dateTime; }
