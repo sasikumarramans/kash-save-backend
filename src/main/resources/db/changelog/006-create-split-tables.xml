@@ -19,10 +19,10 @@
             <column name="currency" type="VARCHAR(3)" defaultValue="INR">
                 <constraints nullable="false"/>
             </column>
-            <column name="created_at" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP">
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
-            <column name="updated_at" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP">
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -46,7 +46,7 @@
             <column name="is_admin" type="BOOLEAN" defaultValue="false">
                 <constraints nullable="false"/>
             </column>
-            <column name="joined_at" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP">
+            <column name="joined_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -88,10 +88,10 @@
             <column name="created_by_user_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="created_at" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP">
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
-            <column name="updated_at" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP">
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -128,7 +128,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="settled_at" type="TIMESTAMP"/>
-            <column name="created_at" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP">
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -165,7 +165,7 @@
             </column>
             <column name="split_expense_id" type="BIGINT"/>
             <column name="notes" type="TEXT"/>
-            <column name="settlement_date" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP">
+            <column name="settlement_date" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
             <column name="recorded_by_user_id" type="BIGINT">
@@ -205,7 +205,7 @@
             <column name="related_user_id" type="BIGINT"/>
             <column name="group_id" type="BIGINT"/>
             <column name="split_expense_id" type="BIGINT"/>
-            <column name="created_at" type="TIMESTAMP" defaultValue="CURRENT_TIMESTAMP">
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
         </createTable>
