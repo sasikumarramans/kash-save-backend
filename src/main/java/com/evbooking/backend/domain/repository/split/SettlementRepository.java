@@ -12,13 +12,10 @@ import java.util.Optional;
 public interface SettlementRepository {
     Settlement save(Settlement settlement);
     Optional<Settlement> findById(Long id);
+    Page<Settlement> findByUserId(Long userId, Pageable pageable);
     List<Settlement> findByFromUserId(Long fromUserId);
     List<Settlement> findByToUserId(Long toUserId);
-    List<Settlement> findByFromUserIdOrToUserId(Long userId1, Long userId2);
-    Page<Settlement> findByFromUserIdOrToUserId(Long userId1, Long userId2, Pageable pageable);
+    List<Settlement> findBetweenUsers(Long userId1, Long userId2);
     List<Settlement> findBySplitExpenseId(Long splitExpenseId);
-    List<Settlement> findBySettlementDateBetween(LocalDateTime startDate, LocalDateTime endDate);
-    BigDecimal getTotalSettlementsByFromUserId(Long fromUserId);
-    BigDecimal getTotalSettlementsByToUserId(Long toUserId);
-    void deleteById(Long id);
+    List<Settlement> findByGroupId(Long groupId);
 }

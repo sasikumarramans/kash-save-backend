@@ -8,14 +8,10 @@ import java.util.Optional;
 
 public interface SplitParticipantRepository {
     SplitParticipant save(SplitParticipant splitParticipant);
-    Optional<SplitParticipant> findById(Long id);
-    Optional<SplitParticipant> findBySplitExpenseIdAndUserId(Long splitExpenseId, Long userId);
     List<SplitParticipant> findBySplitExpenseId(Long splitExpenseId);
     List<SplitParticipant> findByUserId(Long userId);
-    List<SplitParticipant> findByUserIdAndIsSettled(Long userId, boolean isSettled);
-    void deleteBySplitExpenseIdAndUserId(Long splitExpenseId, Long userId);
+    Optional<SplitParticipant> findBySplitExpenseIdAndUserId(Long expenseId, Long userId);
+    List<SplitParticipant> findByUserIdAndIsSettledFalse(Long userId);
+    List<SplitParticipant> findByGroupId(Long groupId);
     void deleteBySplitExpenseId(Long splitExpenseId);
-    BigDecimal getTotalAmountOwedByUserId(Long userId);
-    BigDecimal getTotalAmountOwedToUserId(Long userId);
-    long countUnsettledByUserId(Long userId);
 }

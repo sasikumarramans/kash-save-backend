@@ -1,4 +1,4 @@
-package com.evbooking.backend.domain.repository.split;
+package com.evbooking.backend.infrastructure.repository.split;
 
 import com.evbooking.backend.infrastructure.entity.split.GroupEntity;
 import org.springframework.data.domain.Page;
@@ -12,15 +12,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface GroupRepository extends JpaRepository<GroupEntity, Long> {
+public interface JpaGroupRepository extends JpaRepository<GroupEntity, Long> {
 
     @Query("SELECT g FROM GroupEntity g JOIN GroupMemberEntity gm ON g.id = gm.groupId WHERE gm.userId = :userId")
-    Page<GroupEntity> findGroupsByMemberId(@Param("userId") Long userId, Pageable pageable);
+    Page<GroupEntity> findByUserId(@Param("userId") Long userId, Pageable pageable);
 
     @Query("SELECT g FROM GroupEntity g JOIN GroupMemberEntity gm ON g.id = gm.groupId WHERE g.id = :groupId AND gm.userId = :userId")
     Optional<GroupEntity> findByIdAndUserId(@Param("groupId") Long groupId, @Param("userId") Long userId);
 
     List<GroupEntity> findByAdminUserId(Long adminUserId);
-
-    boolean existsByIdAndAdminUserId(Long id, Long adminUserId);
 }
