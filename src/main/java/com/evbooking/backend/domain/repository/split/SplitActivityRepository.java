@@ -34,13 +34,15 @@ public interface SplitActivityRepository extends JpaRepository<SplitActivityEnti
     @Query("SELECT sa FROM SplitActivityEntity sa WHERE sa.groupId = :groupId AND (sa.userId = :userId OR sa.relatedUserId = :userId) ORDER BY sa.createdAt DESC")
     Page<SplitActivityEntity> findByGroupIdAndUser(@Param("groupId") Long groupId, @Param("userId") Long userId, Pageable pageable);
 
-    List<SplitActivityEntity> findByGroupId(Long groupId);
+    @Query("SELECT sa FROM SplitActivityEntity sa WHERE sa.groupId = :groupId")
+    List<SplitActivityEntity> findByGroupId(@Param("groupId") Long groupId);
 
     // Expense-specific activities
     @Query("SELECT sa FROM SplitActivityEntity sa WHERE sa.splitExpenseId = :splitExpenseId AND (sa.userId = :userId OR sa.relatedUserId = :userId) ORDER BY sa.createdAt DESC")
     Page<SplitActivityEntity> findBySplitExpenseIdAndUser(@Param("splitExpenseId") Long splitExpenseId, @Param("userId") Long userId, Pageable pageable);
 
-    List<SplitActivityEntity> findBySplitExpenseId(Long splitExpenseId);
+    @Query("SELECT sa FROM SplitActivityEntity sa WHERE sa.splitExpenseId = :splitExpenseId")
+    List<SplitActivityEntity> findBySplitExpenseId(@Param("splitExpenseId") Long splitExpenseId);
 
     // Friend-related activities
     @Query("SELECT sa FROM SplitActivityEntity sa WHERE ((sa.userId = :userId AND sa.relatedUserId = :friendId) OR (sa.userId = :friendId AND sa.relatedUserId = :userId)) AND sa.groupId IS NULL ORDER BY sa.createdAt DESC")

@@ -21,7 +21,8 @@ public interface GroupMemberRepository extends JpaRepository<GroupMemberEntity, 
 
     List<GroupMemberEntity> findByGroupIdAndIsAdminTrue(Long groupId);
 
-    List<GroupMemberEntity> findAdminsByGroupId(Long groupId);
+    @Query("SELECT gm FROM GroupMemberEntity gm WHERE gm.groupId = :groupId AND gm.isAdmin = true")
+    List<GroupMemberEntity> findAdminsByGroupId(@Param("groupId") Long groupId);
 
     void deleteByGroupIdAndUserId(Long groupId, Long userId);
 
