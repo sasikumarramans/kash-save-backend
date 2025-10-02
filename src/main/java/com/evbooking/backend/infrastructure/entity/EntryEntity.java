@@ -26,6 +26,9 @@ public class EntryEntity {
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal amount;
 
+    @Column(nullable = false, length = 3)
+    private String currency = "INR";
+
     @Column(name = "date_time", nullable = false)
     private LocalDateTime dateTime;
 
@@ -51,6 +54,9 @@ public class EntryEntity {
 
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
+
+    public String getCurrency() { return currency; }
+    public void setCurrency(String currency) { this.currency = currency; }
 
     public LocalDateTime getDateTime() { return dateTime; }
     public void setDateTime(LocalDateTime dateTime) { this.dateTime = dateTime; }
