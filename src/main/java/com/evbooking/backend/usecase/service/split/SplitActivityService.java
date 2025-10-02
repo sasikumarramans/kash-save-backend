@@ -5,6 +5,7 @@ import com.evbooking.backend.domain.model.split.*;
 import com.evbooking.backend.domain.repository.UserRepository;
 import com.evbooking.backend.domain.repository.split.*;
 import com.evbooking.backend.presentation.dto.split.SplitActivityResponse;
+import com.evbooking.backend.infrastructure.mapper.split.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.data.domain.Page;
@@ -25,27 +26,36 @@ public class SplitActivityService {
     private final SplitExpenseRepository splitExpenseRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final ObjectMapper objectMapper;
+    private final GroupMapper groupMapper;
+    private final SplitExpenseMapper splitExpenseMapper;
+    private final GroupMemberMapper groupMemberMapper;
 
     public SplitActivityService(SplitActivityRepository splitActivityRepository,
                                UserRepository userRepository,
                                GroupRepository groupRepository,
                                SplitExpenseRepository splitExpenseRepository,
                                GroupMemberRepository groupMemberRepository,
-                               ObjectMapper objectMapper) {
+                               ObjectMapper objectMapper,
+                               GroupMapper groupMapper,
+                               SplitExpenseMapper splitExpenseMapper,
+                               GroupMemberMapper groupMemberMapper) {
         this.splitActivityRepository = splitActivityRepository;
         this.userRepository = userRepository;
         this.groupRepository = groupRepository;
         this.splitExpenseRepository = splitExpenseRepository;
         this.groupMemberRepository = groupMemberRepository;
         this.objectMapper = objectMapper;
+        this.groupMapper = groupMapper;
+        this.splitExpenseMapper = splitExpenseMapper;
+        this.groupMemberMapper = groupMemberMapper;
     }
 
     // ===== ACTIVITY LOGGING METHODS =====
 
     public void logGroupCreated(Long groupId, Long creatorUserId) {
-        Optional<Group> groupOpt = groupRepository.findById(groupId);
-        if (groupOpt.isPresent()) {
-            Group group = groupOpt.get();
+        var groupEntityOpt = groupRepository.findById(groupId);
+        if (groupEntityOpt.isPresent()) {
+            Group group = groupMapper.toDomain(groupEntityOpt.get());
             Map<String, Object> data = Map.of(
                 "groupName", group.getName(),
                 "description", group.getDescription() != null ? group.getDescription() : "",
@@ -84,9 +94,9 @@ public class SplitActivityService {
     }
 
     public void logExpenseCreated(Long expenseId, Long creatorUserId) {
-        Optional<SplitExpense> expenseOpt = splitExpenseRepository.findById(expenseId);
-        if (expenseOpt.isPresent()) {
-            SplitExpense expense = expenseOpt.get();
+        var expenseEntityOpt = splitExpenseRepository.findById(expenseId);
+        if (expenseEntityOpt.isPresent()) {
+            SplitExpense expense = splitExpenseMapper.toDomain(expenseEntityOpt.get());
             Map<String, Object> data = Map.of(
                 "description", expense.getDescription(),
                 "amount", expense.getTotalAmount(),
@@ -191,7 +201,10 @@ public class SplitActivityService {
 
     private Page<SplitActivity> getGroupActivitiesForUser(Long userId, Pageable pageable) {
         // Get activities related to groups where user is a member
-        List<GroupMember> memberships = groupMemberRepository.findByUserId(userId);
+        var membershipEntities = groupMemberRepository.findByUserId(userId);
+        List<GroupMember> memberships = membershipEntities.stream()
+            .map(groupMemberMapper::toDomain)
+            .collect(Collectors.toList());
         List<Long> groupIds = memberships.stream()
             .map(GroupMember::getGroupId)
             .collect(Collectors.toList());
@@ -235,20 +248,22 @@ public class SplitActivityService {
         SplitActivityResponse.ActivityContext context = new SplitActivityResponse.ActivityContext();
 
         if (activity.getGroupId() != null) {
-            Optional<Group> group = groupRepository.findById(activity.getGroupId());
-            if (group.isPresent()) {
-                context.setGroupId(group.get().getId());
-                context.setGroupName(group.get().getName());
+            var groupEntityOpt = groupRepository.findById(activity.getGroupId());
+            if (groupEntityOpt.isPresent()) {
+                Group group = groupMapper.toDomain(groupEntityOpt.get());
+                context.setGroupId(group.getId());
+                context.setGroupName(group.getName());
             }
         }
 
         if (activity.getSplitExpenseId() != null) {
-            Optional<SplitExpense> expense = splitExpenseRepository.findById(activity.getSplitExpenseId());
-            if (expense.isPresent()) {
-                context.setExpenseId(expense.get().getId());
-                context.setExpenseDescription(expense.get().getDescription());
-                context.setAmount(expense.get().getTotalAmount());
-                context.setCurrency(expense.get().getCurrency());
+            var expenseEntityOpt = splitExpenseRepository.findById(activity.getSplitExpenseId());
+            if (expenseEntityOpt.isPresent()) {
+                SplitExpense expense = splitExpenseMapper.toDomain(expenseEntityOpt.get());
+                context.setExpenseId(expense.getId());
+                context.setExpenseDescription(expense.getDescription());
+                context.setAmount(expense.getTotalAmount());
+                context.setCurrency(expense.getCurrency());
             }
         }
 

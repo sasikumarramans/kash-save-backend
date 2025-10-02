@@ -5,6 +5,7 @@ import com.evbooking.backend.domain.model.split.*;
 import com.evbooking.backend.domain.repository.UserRepository;
 import com.evbooking.backend.domain.repository.split.*;
 import com.evbooking.backend.presentation.dto.split.*;
+import com.evbooking.backend.infrastructure.mapper.split.*;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -20,23 +21,36 @@ public class BalanceService {
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
+    private final SplitExpenseMapper splitExpenseMapper;
+    private final SplitParticipantMapper splitParticipantMapper;
+    private final GroupMapper groupMapper;
+    private final GroupMemberMapper groupMemberMapper;
 
     public BalanceService(SplitExpenseRepository splitExpenseRepository,
                          SplitParticipantRepository splitParticipantRepository,
                          GroupRepository groupRepository,
                          GroupMemberRepository groupMemberRepository,
-                         UserRepository userRepository) {
+                         UserRepository userRepository,
+                         SplitExpenseMapper splitExpenseMapper,
+                         SplitParticipantMapper splitParticipantMapper,
+                         GroupMapper groupMapper,
+                         GroupMemberMapper groupMemberMapper) {
         this.splitExpenseRepository = splitExpenseRepository;
         this.splitParticipantRepository = splitParticipantRepository;
         this.groupRepository = groupRepository;
         this.groupMemberRepository = groupMemberRepository;
         this.userRepository = userRepository;
+        this.splitExpenseMapper = splitExpenseMapper;
+        this.splitParticipantMapper = splitParticipantMapper;
+        this.groupMapper = groupMapper;
+        this.groupMemberMapper = groupMemberMapper;
     }
 
     public List<FriendBalanceResponse> getFriendsBalances(Long userId, String filter) {
         // Get all individual (non-group) expenses where user is involved
-        List<SplitExpense> individualExpenses = splitExpenseRepository.findExpensesByParticipantUserId(userId)
-            .stream()
+        var expenseEntities = splitExpenseRepository.findExpensesByParticipantUserId(userId);
+        List<SplitExpense> individualExpenses = expenseEntities.stream()
+            .map(splitExpenseMapper::toDomain)
             .filter(expense -> expense.getGroupId() == null)
             .collect(Collectors.toList());
 
@@ -44,7 +58,10 @@ public class BalanceService {
         Map<Long, FriendBalanceData> friendBalances = new HashMap<>();
 
         for (SplitExpense expense : individualExpenses) {
-            List<SplitParticipant> participants = splitParticipantRepository.findBySplitExpenseId(expense.getId());
+            var participantEntities = splitParticipantRepository.findBySplitExpenseId(expense.getId());
+            List<SplitParticipant> participants = participantEntities.stream()
+                .map(splitParticipantMapper::toDomain)
+                .collect(Collectors.toList());
 
             for (SplitParticipant participant : participants) {
                 if (!participant.getUserId().equals(userId)) {
@@ -122,13 +139,16 @@ public class BalanceService {
 
     public List<GroupBalanceResponse> getGroupsBalances(Long userId, String filter) {
         // Get all groups where user is a member
-        List<GroupMember> memberships = groupMemberRepository.findByUserId(userId);
+        var membershipEntities = groupMemberRepository.findByUserId(userId);
+        List<GroupMember> memberships = membershipEntities.stream()
+            .map(groupMemberMapper::toDomain)
+            .collect(Collectors.toList());
         List<GroupBalanceResponse> responses = new ArrayList<>();
 
         for (GroupMember membership : memberships) {
-            Optional<Group> groupOpt = groupRepository.findById(membership.getGroupId());
-            if (groupOpt.isPresent()) {
-                Group group = groupOpt.get();
+            var groupEntityOpt = groupRepository.findById(membership.getGroupId());
+            if (groupEntityOpt.isPresent()) {
+                Group group = groupMapper.toDomain(groupEntityOpt.get());
 
                 // Calculate balance for this group
                 GroupBalanceData balanceData = calculateGroupBalance(group.getId(), userId);
@@ -199,12 +219,18 @@ public class BalanceService {
         BigDecimal netBalance = totalOwesYou.subtract(totalYouOwe);
 
         // Expense totals
-        List<SplitExpense> allExpenses = splitExpenseRepository.findExpensesByParticipantUserId(userId);
+        var allExpenseEntities = splitExpenseRepository.findExpensesByParticipantUserId(userId);
+        List<SplitExpense> allExpenses = allExpenseEntities.stream()
+            .map(splitExpenseMapper::toDomain)
+            .collect(Collectors.toList());
         int totalExpenses = allExpenses.size();
 
         int settledExpenses = 0;
         for (SplitExpense expense : allExpenses) {
-            List<SplitParticipant> participants = splitParticipantRepository.findBySplitExpenseId(expense.getId());
+            var participantEntities = splitParticipantRepository.findBySplitExpenseId(expense.getId());
+            List<SplitParticipant> participants = participantEntities.stream()
+                .map(splitParticipantMapper::toDomain)
+                .collect(Collectors.toList());
             boolean allSettled = participants.stream().allMatch(SplitParticipant::isSettled);
             if (allSettled) settledExpenses++;
         }
@@ -232,19 +258,28 @@ public class BalanceService {
 
     private GroupBalanceData calculateGroupBalance(Long groupId, Long userId) {
         // Get all expenses for this group (including related individual expenses)
-        List<GroupMember> groupMembers = groupMemberRepository.findByGroupId(groupId);
+        var groupMemberEntities = groupMemberRepository.findByGroupId(groupId);
+        List<GroupMember> groupMembers = groupMemberEntities.stream()
+            .map(groupMemberMapper::toDomain)
+            .collect(Collectors.toList());
         List<Long> memberUserIds = groupMembers.stream()
             .map(GroupMember::getUserId)
             .collect(Collectors.toList());
 
         // This would need the enhanced repository method we discussed
         // For now, just get direct group expenses
-        List<SplitExpense> groupExpenses = splitExpenseRepository.findByGroupId(groupId);
+        var groupExpenseEntities = splitExpenseRepository.findByGroupId(groupId, org.springframework.data.domain.Pageable.unpaged());
+        List<SplitExpense> groupExpenses = groupExpenseEntities.getContent().stream()
+            .map(splitExpenseMapper::toDomain)
+            .collect(Collectors.toList());
 
         GroupBalanceData balanceData = new GroupBalanceData();
 
         for (SplitExpense expense : groupExpenses) {
-            List<SplitParticipant> participants = splitParticipantRepository.findBySplitExpenseId(expense.getId());
+            var participantEntities = splitParticipantRepository.findBySplitExpenseId(expense.getId());
+            List<SplitParticipant> participants = participantEntities.stream()
+                .map(splitParticipantMapper::toDomain)
+                .collect(Collectors.toList());
 
             Optional<SplitParticipant> userParticipant = participants.stream()
                 .filter(p -> p.getUserId().equals(userId))

@@ -5,7 +5,9 @@ import com.evbooking.backend.domain.model.split.*;
 import com.evbooking.backend.domain.repository.UserRepository;
 import com.evbooking.backend.domain.repository.split.*;
 import com.evbooking.backend.domain.service.split.SplitCalculationService;
+import com.evbooking.backend.infrastructure.mapper.split.*;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,9 @@ public class SplitExpenseService {
     private final GroupService groupService;
     private final SplitCalculationService splitCalculationService;
     private final SplitActivityService splitActivityService;
+    private final SplitExpenseMapper splitExpenseMapper;
+    private final SplitParticipantMapper splitParticipantMapper;
+    private final GroupMemberMapper groupMemberMapper;
 
     public SplitExpenseService(SplitExpenseRepository splitExpenseRepository,
                               SplitParticipantRepository splitParticipantRepository,
@@ -32,7 +37,10 @@ public class SplitExpenseService {
                               UserRepository userRepository,
                               GroupService groupService,
                               SplitCalculationService splitCalculationService,
-                              SplitActivityService splitActivityService) {
+                              SplitActivityService splitActivityService,
+                              SplitExpenseMapper splitExpenseMapper,
+                              SplitParticipantMapper splitParticipantMapper,
+                              GroupMemberMapper groupMemberMapper) {
         this.splitExpenseRepository = splitExpenseRepository;
         this.splitParticipantRepository = splitParticipantRepository;
         this.groupMemberRepository = groupMemberRepository;
@@ -40,6 +48,9 @@ public class SplitExpenseService {
         this.groupService = groupService;
         this.splitCalculationService = splitCalculationService;
         this.splitActivityService = splitActivityService;
+        this.splitExpenseMapper = splitExpenseMapper;
+        this.splitParticipantMapper = splitParticipantMapper;
+        this.groupMemberMapper = groupMemberMapper;
     }
 
     public SplitExpense createSplitExpense(String description, BigDecimal totalAmount, String currency,
@@ -91,7 +102,8 @@ public class SplitExpenseService {
         // Create split expense
         SplitExpense splitExpense = new SplitExpense(description, totalAmount, currency,
             paidByUser.getId(), groupId, splitType, createdByUserId);
-        splitExpense = splitExpenseRepository.save(splitExpense);
+        var savedEntity = splitExpenseRepository.save(splitExpenseMapper.toEntity(splitExpense));
+        splitExpense = splitExpenseMapper.toDomain(savedEntity);
 
         // Create split participants
         for (Map.Entry<Long, BigDecimal> entry : calculatedAmounts.entrySet()) {
@@ -106,7 +118,7 @@ public class SplitExpenseService {
                 participant.setSettled(true);
             }
 
-            splitParticipantRepository.save(participant);
+            splitParticipantRepository.save(splitParticipantMapper.toEntity(participant));
         }
 
         // Log expense creation activity
@@ -116,12 +128,12 @@ public class SplitExpenseService {
     }
 
     public Optional<SplitExpense> getSplitExpenseById(Long expenseId, Long userId) {
-        Optional<SplitExpense> expenseOpt = splitExpenseRepository.findById(expenseId);
-        if (expenseOpt.isEmpty()) {
+        var expenseEntityOpt = splitExpenseRepository.findById(expenseId);
+        if (expenseEntityOpt.isEmpty()) {
             return Optional.empty();
         }
 
-        SplitExpense expense = expenseOpt.get();
+        SplitExpense expense = splitExpenseMapper.toDomain(expenseEntityOpt.get());
 
         // Check if user is involved in this expense
         if (expense.getGroupId() != null) {
@@ -131,7 +143,10 @@ public class SplitExpenseService {
             }
         } else {
             // Individual expense - check if user is a participant or creator
-            List<SplitParticipant> participants = splitParticipantRepository.findBySplitExpenseId(expenseId);
+            var participantEntities = splitParticipantRepository.findBySplitExpenseId(expenseId);
+            List<SplitParticipant> participants = participantEntities.stream()
+                .map(splitParticipantMapper::toDomain)
+                .collect(Collectors.toList());
             boolean isInvolved = participants.stream().anyMatch(p -> p.getUserId().equals(userId)) ||
                                expense.getCreatedByUserId().equals(userId) ||
                                expense.getPaidByUserId().equals(userId);
@@ -140,11 +155,15 @@ public class SplitExpenseService {
             }
         }
 
-        return expenseOpt;
+        return Optional.of(expense);
     }
 
     public Page<SplitExpense> getUserSplitExpenses(Long userId, Pageable pageable) {
-        return splitExpenseRepository.findExpensesByParticipantUserId(userId, pageable);
+        var entityPage = splitExpenseRepository.findExpensesByParticipantUserIdPaged(userId, pageable);
+        var domainList = entityPage.getContent().stream()
+            .map(splitExpenseMapper::toDomain)
+            .collect(Collectors.toList());
+        return new PageImpl<>(domainList, pageable, entityPage.getTotalElements());
     }
 
     public Page<SplitExpense> getGroupSplitExpenses(Long groupId, Long userId, Pageable pageable) {
@@ -154,18 +173,26 @@ public class SplitExpenseService {
         }
 
         // Get group members to include individual expenses between them
-        List<GroupMember> groupMembers = groupMemberRepository.findByGroupId(groupId);
-        List<Long> memberUserIds = groupMembers.stream()
-            .map(GroupMember::getUserId)
+        var groupMemberEntities = groupMemberRepository.findByGroupId(groupId);
+        List<Long> memberUserIds = groupMemberEntities.stream()
+            .map(entity -> entity.getUserId())
             .collect(Collectors.toList());
 
         // Return both group expenses and individual expenses involving group members
-        return splitExpenseRepository.findGroupAndRelatedIndividualExpenses(groupId, memberUserIds, userId, pageable);
+        var entityPage = splitExpenseRepository.findGroupAndRelatedIndividualExpenses(groupId, memberUserIds, userId, pageable);
+        var domainList = entityPage.getContent().stream()
+            .map(splitExpenseMapper::toDomain)
+            .collect(Collectors.toList());
+        return new PageImpl<>(domainList, pageable, entityPage.getTotalElements());
     }
 
     public Page<SplitExpense> getIndividualSplitExpenses(Long userId, Pageable pageable) {
         // Get all individual (non-group) expenses where user is involved
-        return splitExpenseRepository.findByGroupIdIsNull(pageable);
+        var entityPage = splitExpenseRepository.findByGroupIdIsNull(userId, pageable);
+        var domainList = entityPage.getContent().stream()
+            .map(splitExpenseMapper::toDomain)
+            .collect(Collectors.toList());
+        return new PageImpl<>(domainList, pageable, entityPage.getTotalElements());
     }
 
     public List<SplitParticipant> getSplitParticipants(Long expenseId, Long userId) {
@@ -174,7 +201,10 @@ public class SplitExpenseService {
             throw new RuntimeException("Split expense not found or access denied");
         }
 
-        return splitParticipantRepository.findBySplitExpenseId(expenseId);
+        var participantEntities = splitParticipantRepository.findBySplitExpenseId(expenseId);
+        return participantEntities.stream()
+            .map(splitParticipantMapper::toDomain)
+            .collect(Collectors.toList());
     }
 
     public void deleteSplitExpense(Long expenseId, Long userId) {
@@ -205,17 +235,19 @@ public class SplitExpenseService {
             throw new RuntimeException("Split expense not found or access denied");
         }
 
-        Optional<SplitParticipant> participantOpt = splitParticipantRepository
+        var participantEntityOpt = splitParticipantRepository
             .findBySplitExpenseIdAndUserId(expenseId, participantUserId);
 
-        if (participantOpt.isEmpty()) {
+        if (participantEntityOpt.isEmpty()) {
             throw new RuntimeException("Participant not found in this expense");
         }
 
-        SplitParticipant participant = participantOpt.get();
+        var participantEntity = participantEntityOpt.get();
+        SplitParticipant participant = splitParticipantMapper.toDomain(participantEntity);
         participant.setSettled(isSettled);
 
-        SplitParticipant savedParticipant = splitParticipantRepository.save(participant);
+        var savedEntity = splitParticipantRepository.save(splitParticipantMapper.toEntity(participant));
+        SplitParticipant savedParticipant = splitParticipantMapper.toDomain(savedEntity);
 
         // Log participant settlement activity
         splitActivityService.logParticipantSettled(expenseId, participantUserId, updatedByUserId, isSettled);

@@ -6,13 +6,17 @@ import com.evbooking.backend.domain.model.User;
 import com.evbooking.backend.domain.repository.split.GroupRepository;
 import com.evbooking.backend.domain.repository.split.GroupMemberRepository;
 import com.evbooking.backend.domain.repository.UserRepository;
+import com.evbooking.backend.infrastructure.mapper.split.GroupMapper;
+import com.evbooking.backend.infrastructure.mapper.split.GroupMemberMapper;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -22,12 +26,16 @@ public class GroupService {
     private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
     private final SplitActivityService splitActivityService;
+    private final GroupMapper groupMapper;
+    private final GroupMemberMapper groupMemberMapper;
 
-    public GroupService(GroupRepository groupRepository, GroupMemberRepository groupMemberRepository, UserRepository userRepository, SplitActivityService splitActivityService) {
+    public GroupService(GroupRepository groupRepository, GroupMemberRepository groupMemberRepository, UserRepository userRepository, SplitActivityService splitActivityService, GroupMapper groupMapper, GroupMemberMapper groupMemberMapper) {
         this.groupRepository = groupRepository;
         this.groupMemberRepository = groupMemberRepository;
         this.userRepository = userRepository;
         this.splitActivityService = splitActivityService;
+        this.groupMapper = groupMapper;
+        this.groupMemberMapper = groupMemberMapper;
     }
 
     public Group createGroup(String name, String description, String currency, List<String> memberUsernames, Long adminUserId) {
@@ -38,11 +46,12 @@ public class GroupService {
 
         // Create group
         Group group = new Group(name, description, adminUserId, currency);
-        group = groupRepository.save(group);
+        var savedEntity = groupRepository.save(groupMapper.toEntity(group));
+        group = groupMapper.toDomain(savedEntity);
 
         // Add admin as member
         GroupMember adminMember = new GroupMember(group.getId(), adminUserId, true);
-        groupMemberRepository.save(adminMember);
+        groupMemberRepository.save(groupMemberMapper.toEntity(adminMember));
 
         // Add other members by username
         for (String username : memberUsernames) {
@@ -57,7 +66,7 @@ public class GroupService {
                 // Check if user is already a member
                 if (!groupMemberRepository.existsByGroupIdAndUserId(group.getId(), user.getId())) {
                     GroupMember member = new GroupMember(group.getId(), user.getId(), false);
-                    groupMemberRepository.save(member);
+                    groupMemberRepository.save(groupMemberMapper.toEntity(member));
 
                     // Log member added activity
                     splitActivityService.logMemberAdded(group.getId(), user.getId(), adminUserId);
@@ -77,11 +86,15 @@ public class GroupService {
             return Optional.empty();
         }
 
-        return groupRepository.findById(groupId);
+        return groupRepository.findById(groupId).map(groupMapper::toDomain);
     }
 
     public Page<Group> getUserGroups(Long userId, Pageable pageable) {
-        return groupRepository.findGroupsByMemberId(userId, pageable);
+        var entityPage = groupRepository.findGroupsByMemberId(userId, pageable);
+        var domainList = entityPage.getContent().stream()
+            .map(groupMapper::toDomain)
+            .collect(Collectors.toList());
+        return new PageImpl<>(domainList, pageable, entityPage.getTotalElements());
     }
 
     public List<GroupMember> getGroupMembers(Long groupId, Long userId) {
@@ -90,13 +103,16 @@ public class GroupService {
             throw new RuntimeException("You are not a member of this group");
         }
 
-        return groupMemberRepository.findByGroupId(groupId);
+        var memberEntities = groupMemberRepository.findByGroupId(groupId);
+        return memberEntities.stream()
+            .map(groupMemberMapper::toDomain)
+            .collect(Collectors.toList());
     }
 
     public GroupMember addMemberToGroup(Long groupId, String username, Long adminUserId) {
         // Verify admin permissions
-        Optional<GroupMember> adminMemberOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, adminUserId);
-        if (adminMemberOpt.isEmpty() || !adminMemberOpt.get().isAdmin()) {
+        var adminMemberEntityOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, adminUserId);
+        if (adminMemberEntityOpt.isEmpty() || !groupMemberMapper.toDomain(adminMemberEntityOpt.get()).isAdmin()) {
             throw new RuntimeException("Only group admins can add members");
         }
 
@@ -114,7 +130,8 @@ public class GroupService {
         }
 
         GroupMember member = new GroupMember(groupId, user.getId(), false);
-        GroupMember savedMember = groupMemberRepository.save(member);
+        var savedEntity = groupMemberRepository.save(groupMemberMapper.toEntity(member));
+        GroupMember savedMember = groupMemberMapper.toDomain(savedEntity);
 
         // Log member added activity
         splitActivityService.logMemberAdded(groupId, user.getId(), adminUserId);
@@ -124,8 +141,8 @@ public class GroupService {
 
     public void removeMemberFromGroup(Long groupId, Long userIdToRemove, Long adminUserId) {
         // Verify admin permissions
-        Optional<GroupMember> adminMemberOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, adminUserId);
-        if (adminMemberOpt.isEmpty() || !adminMemberOpt.get().isAdmin()) {
+        var adminMemberEntityOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, adminUserId);
+        if (adminMemberEntityOpt.isEmpty() || !groupMemberMapper.toDomain(adminMemberEntityOpt.get()).isAdmin()) {
             throw new RuntimeException("Only group admins can remove members");
         }
 
@@ -135,7 +152,10 @@ public class GroupService {
         }
 
         // Prevent removing the last admin
-        List<GroupMember> admins = groupMemberRepository.findAdminsByGroupId(groupId);
+        var adminEntities = groupMemberRepository.findAdminsByGroupId(groupId);
+        List<GroupMember> admins = adminEntities.stream()
+            .map(groupMemberMapper::toDomain)
+            .collect(Collectors.toList());
         if (admins.size() == 1 && admins.get(0).getUserId().equals(userIdToRemove)) {
             throw new RuntimeException("Cannot remove the last admin from the group");
         }
@@ -150,7 +170,10 @@ public class GroupService {
         }
 
         // Check if user is the last admin
-        List<GroupMember> admins = groupMemberRepository.findAdminsByGroupId(groupId);
+        var adminEntities = groupMemberRepository.findAdminsByGroupId(groupId);
+        List<GroupMember> admins = adminEntities.stream()
+            .map(groupMemberMapper::toDomain)
+            .collect(Collectors.toList());
         boolean isLastAdmin = admins.size() == 1 && admins.get(0).getUserId().equals(userId);
 
         if (isLastAdmin) {
@@ -170,8 +193,8 @@ public class GroupService {
 
     public void deleteGroup(Long groupId, Long adminUserId) {
         // Verify admin permissions
-        Optional<GroupMember> adminMemberOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, adminUserId);
-        if (adminMemberOpt.isEmpty() || !adminMemberOpt.get().isAdmin()) {
+        var adminMemberEntityOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, adminUserId);
+        if (adminMemberEntityOpt.isEmpty() || !groupMemberMapper.toDomain(adminMemberEntityOpt.get()).isAdmin()) {
             throw new RuntimeException("Only group admins can delete the group");
         }
 
@@ -185,39 +208,40 @@ public class GroupService {
 
     public GroupMember makeAdmin(Long groupId, Long userIdToPromote, Long currentAdminUserId) {
         // Verify current admin permissions
-        Optional<GroupMember> currentAdminOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, currentAdminUserId);
-        if (currentAdminOpt.isEmpty() || !currentAdminOpt.get().isAdmin()) {
+        var currentAdminEntityOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, currentAdminUserId);
+        if (currentAdminEntityOpt.isEmpty() || !groupMemberMapper.toDomain(currentAdminEntityOpt.get()).isAdmin()) {
             throw new RuntimeException("Only group admins can promote members");
         }
 
         // Find member to promote
-        Optional<GroupMember> memberOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, userIdToPromote);
-        if (memberOpt.isEmpty()) {
+        var memberEntityOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, userIdToPromote);
+        if (memberEntityOpt.isEmpty()) {
             throw new RuntimeException("User is not a member of this group");
         }
 
-        GroupMember member = memberOpt.get();
+        GroupMember member = groupMemberMapper.toDomain(memberEntityOpt.get());
         if (member.isAdmin()) {
             throw new RuntimeException("User is already an admin");
         }
 
         member.setAdmin(true);
-        return groupMemberRepository.save(member);
+        var savedEntity = groupMemberRepository.save(groupMemberMapper.toEntity(member));
+        return groupMemberMapper.toDomain(savedEntity);
     }
 
     public Group updateGroup(Long groupId, String name, String description, String currency, Long adminUserId) {
         // Verify admin permissions
-        Optional<GroupMember> adminMemberOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, adminUserId);
-        if (adminMemberOpt.isEmpty() || !adminMemberOpt.get().isAdmin()) {
+        var adminMemberEntityOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, adminUserId);
+        if (adminMemberEntityOpt.isEmpty() || !groupMemberMapper.toDomain(adminMemberEntityOpt.get()).isAdmin()) {
             throw new RuntimeException("Only group admins can update the group");
         }
 
-        Optional<Group> groupOpt = groupRepository.findById(groupId);
-        if (groupOpt.isEmpty()) {
+        var groupEntityOpt = groupRepository.findById(groupId);
+        if (groupEntityOpt.isEmpty()) {
             throw new RuntimeException("Group not found");
         }
 
-        Group group = groupOpt.get();
+        Group group = groupMapper.toDomain(groupEntityOpt.get());
         if (name != null && !name.trim().isEmpty()) {
             group.setName(name.trim());
         }
@@ -228,7 +252,8 @@ public class GroupService {
             group.setCurrency(currency.trim());
         }
 
-        return groupRepository.save(group);
+        var savedEntity = groupRepository.save(groupMapper.toEntity(group));
+        return groupMapper.toDomain(savedEntity);
     }
 
     public boolean isGroupMember(Long groupId, Long userId) {
@@ -236,7 +261,7 @@ public class GroupService {
     }
 
     public boolean isGroupAdmin(Long groupId, Long userId) {
-        Optional<GroupMember> memberOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, userId);
-        return memberOpt.isPresent() && memberOpt.get().isAdmin();
+        var memberEntityOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, userId);
+        return memberEntityOpt.isPresent() && groupMemberMapper.toDomain(memberEntityOpt.get()).isAdmin();
     }
 }

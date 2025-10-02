@@ -5,6 +5,7 @@ import com.evbooking.backend.domain.model.split.*;
 import com.evbooking.backend.domain.repository.UserRepository;
 import com.evbooking.backend.domain.repository.split.*;
 import com.evbooking.backend.presentation.dto.split.*;
+import com.evbooking.backend.infrastructure.mapper.split.*;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
@@ -12,6 +13,7 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.*;
 import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.layout.properties.UnitValue;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -30,6 +32,10 @@ public class PdfExportService {
     private final SplitParticipantRepository splitParticipantRepository;
     private final UserRepository userRepository;
     private final BalanceService balanceService;
+    private final GroupMapper groupMapper;
+    private final GroupMemberMapper groupMemberMapper;
+    private final SplitExpenseMapper splitExpenseMapper;
+    private final SplitParticipantMapper splitParticipantMapper;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
@@ -38,13 +44,21 @@ public class PdfExportService {
                            SplitExpenseRepository splitExpenseRepository,
                            SplitParticipantRepository splitParticipantRepository,
                            UserRepository userRepository,
-                           BalanceService balanceService) {
+                           BalanceService balanceService,
+                           GroupMapper groupMapper,
+                           GroupMemberMapper groupMemberMapper,
+                           SplitExpenseMapper splitExpenseMapper,
+                           SplitParticipantMapper splitParticipantMapper) {
         this.groupRepository = groupRepository;
         this.groupMemberRepository = groupMemberRepository;
         this.splitExpenseRepository = splitExpenseRepository;
         this.splitParticipantRepository = splitParticipantRepository;
         this.userRepository = userRepository;
         this.balanceService = balanceService;
+        this.groupMapper = groupMapper;
+        this.groupMemberMapper = groupMemberMapper;
+        this.splitExpenseMapper = splitExpenseMapper;
+        this.splitParticipantMapper = splitParticipantMapper;
     }
 
     public byte[] generateGroupReport(Long groupId, Long userId) {
@@ -53,12 +67,12 @@ public class PdfExportService {
             throw new RuntimeException("You are not a member of this group");
         }
 
-        Optional<Group> groupOpt = groupRepository.findById(groupId);
-        if (groupOpt.isEmpty()) {
+        var groupEntityOpt = groupRepository.findById(groupId);
+        if (groupEntityOpt.isEmpty()) {
             throw new RuntimeException("Group not found");
         }
 
-        Group group = groupOpt.get();
+        Group group = groupMapper.toDomain(groupEntityOpt.get());
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             PdfWriter writer = new PdfWriter(baos);
@@ -229,7 +243,10 @@ public class PdfExportService {
             .setMarginBottom(10);
         document.add(sectionTitle);
 
-        java.util.List<GroupMember> members = groupMemberRepository.findByGroupId(groupId);
+        var memberEntities = groupMemberRepository.findByGroupId(groupId);
+        java.util.List<GroupMember> members = memberEntities.stream()
+            .map(groupMemberMapper::toDomain)
+            .collect(java.util.stream.Collectors.toList());
 
         Table table = new Table(UnitValue.createPercentArray(new float[]{3, 2, 1}))
             .setWidth(UnitValue.createPercentValue(100));
@@ -261,7 +278,10 @@ public class PdfExportService {
             .setMarginBottom(10);
         document.add(sectionTitle);
 
-        java.util.List<SplitExpense> expenses = splitExpenseRepository.findByGroupId(groupId);
+        var expenseEntitiesPage = splitExpenseRepository.findByGroupId(groupId, Pageable.unpaged());
+        java.util.List<SplitExpense> expenses = expenseEntitiesPage.getContent().stream()
+            .map(splitExpenseMapper::toDomain)
+            .collect(java.util.stream.Collectors.toList());
 
         if (expenses.isEmpty()) {
             document.add(new Paragraph("No expenses found.").setItalic());
@@ -345,7 +365,10 @@ public class PdfExportService {
         document.add(sectionTitle);
 
         // Get all expenses for this group
-        java.util.List<SplitExpense> expenses = splitExpenseRepository.findByGroupId(groupId);
+        var expenseEntitiesPage = splitExpenseRepository.findByGroupId(groupId, Pageable.unpaged());
+        java.util.List<SplitExpense> expenses = expenseEntitiesPage.getContent().stream()
+            .map(splitExpenseMapper::toDomain)
+            .collect(java.util.stream.Collectors.toList());
 
         Map<Long, BigDecimal> netBalances = new HashMap<>();
         String currency = "INR"; // Default currency
@@ -353,7 +376,10 @@ public class PdfExportService {
         // Calculate net balances for each member
         for (SplitExpense expense : expenses) {
             currency = expense.getCurrency(); // Use expense currency
-            java.util.List<SplitParticipant> participants = splitParticipantRepository.findBySplitExpenseId(expense.getId());
+            var participantEntities = splitParticipantRepository.findBySplitExpenseId(expense.getId());
+            java.util.List<SplitParticipant> participants = participantEntities.stream()
+                .map(splitParticipantMapper::toDomain)
+                .collect(java.util.stream.Collectors.toList());
 
             for (SplitParticipant participant : participants) {
                 if (!participant.isSettled()) {
@@ -480,8 +506,9 @@ public class PdfExportService {
             .setMarginBottom(10);
         document.add(sectionTitle);
 
-        java.util.List<SplitExpense> recentExpenses = splitExpenseRepository.findExpensesByParticipantUserId(userId)
-            .stream()
+        var expenseEntities = splitExpenseRepository.findExpensesByParticipantUserId(userId);
+        java.util.List<SplitExpense> recentExpenses = expenseEntities.stream()
+            .map(splitExpenseMapper::toDomain)
             .sorted((e1, e2) -> e2.getCreatedAt().compareTo(e1.getCreatedAt()))
             .limit(10)
             .collect(Collectors.toList());
@@ -559,11 +586,17 @@ public class PdfExportService {
         document.add(sectionTitle);
 
         // Get expenses where both users are participants
-        java.util.List<SplitExpense> allExpenses = splitExpenseRepository.findExpensesByParticipantUserId(userId);
+        var allExpenseEntities = splitExpenseRepository.findExpensesByParticipantUserId(userId);
+        java.util.List<SplitExpense> allExpenses = allExpenseEntities.stream()
+            .map(splitExpenseMapper::toDomain)
+            .collect(java.util.stream.Collectors.toList());
         java.util.List<SplitExpense> sharedExpenses = new java.util.ArrayList<>();
 
         for (SplitExpense expense : allExpenses) {
-            java.util.List<SplitParticipant> participants = splitParticipantRepository.findBySplitExpenseId(expense.getId());
+            var participantEntities = splitParticipantRepository.findBySplitExpenseId(expense.getId());
+            java.util.List<SplitParticipant> participants = participantEntities.stream()
+                .map(splitParticipantMapper::toDomain)
+                .collect(java.util.stream.Collectors.toList());
             boolean bothParticipate = participants.stream()
                 .map(SplitParticipant::getUserId)
                 .collect(Collectors.toSet())

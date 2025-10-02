@@ -1,17 +1,36 @@
 package com.evbooking.backend.domain.repository.split;
 
-import com.evbooking.backend.domain.model.split.GroupMember;
+import com.evbooking.backend.infrastructure.entity.split.GroupMemberEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface GroupMemberRepository {
-    GroupMember save(GroupMember groupMember);
-    List<GroupMember> findByGroupId(Long groupId);
-    List<GroupMember> findByUserId(Long userId);
-    Optional<GroupMember> findByGroupIdAndUserId(Long groupId, Long userId);
-    List<GroupMember> findByGroupIdAndIsAdminTrue(Long groupId);
+@Repository
+public interface GroupMemberRepository extends JpaRepository<GroupMemberEntity, Long> {
+
+    List<GroupMemberEntity> findByGroupId(Long groupId);
+
+    List<GroupMemberEntity> findByUserId(Long userId);
+
+    @Query("SELECT gm FROM GroupMemberEntity gm WHERE gm.groupId = :groupId AND gm.userId = :userId")
+    Optional<GroupMemberEntity> findByGroupIdAndUserId(@Param("groupId") Long groupId, @Param("userId") Long userId);
+
+    List<GroupMemberEntity> findByGroupIdAndIsAdminTrue(Long groupId);
+
+    List<GroupMemberEntity> findAdminsByGroupId(Long groupId);
+
     void deleteByGroupIdAndUserId(Long groupId, Long userId);
+
     void deleteByGroupId(Long groupId);
-    List<Long> findUserIdsByGroupId(Long groupId);
+
+    @Query("SELECT gm.userId FROM GroupMemberEntity gm WHERE gm.groupId = :groupId")
+    List<Long> findUserIdsByGroupId(@Param("groupId") Long groupId);
+
+    boolean existsByGroupIdAndUserId(Long groupId, Long userId);
+
+    long countByGroupId(Long groupId);
 }
