@@ -32,7 +32,7 @@ public class EntryDomainService {
         }
     }
 
-    public Entry createEntry(String name, String description, BigDecimal amount, EntryType type,
+    public Entry createEntry(String name, String description, BigDecimal amount, String currency, EntryType type,
                            LocalDateTime dateTime, Long bookId, Long userId) {
         validateEntryCreation(name, amount, type, bookId, userId);
 
@@ -40,6 +40,6 @@ public class EntryDomainService {
             dateTime = LocalDateTime.now();
         }
 
-        return new Entry(bookId, type, name.trim(), amount, dateTime);
+        return new Entry(bookId, type, name.trim(), amount, currency, dateTime);
     }
 }
