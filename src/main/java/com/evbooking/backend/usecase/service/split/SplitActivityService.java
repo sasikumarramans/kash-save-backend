@@ -6,6 +6,7 @@ import com.evbooking.backend.domain.repository.UserRepository;
 import com.evbooking.backend.domain.repository.split.*;
 import com.evbooking.backend.presentation.dto.split.SplitActivityResponse;
 import com.evbooking.backend.infrastructure.mapper.split.*;
+import org.springframework.data.domain.PageImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.data.domain.Page;
@@ -29,7 +30,7 @@ public class SplitActivityService {
     private final GroupMapper groupMapper;
     private final SplitExpenseMapper splitExpenseMapper;
     private final GroupMemberMapper groupMemberMapper;
-
+    private final SplitActivityMapper splitActivityMapper;
     public SplitActivityService(SplitActivityRepository splitActivityRepository,
                                UserRepository userRepository,
                                GroupRepository groupRepository,
@@ -38,7 +39,8 @@ public class SplitActivityService {
                                ObjectMapper objectMapper,
                                GroupMapper groupMapper,
                                SplitExpenseMapper splitExpenseMapper,
-                               GroupMemberMapper groupMemberMapper) {
+                               GroupMemberMapper groupMemberMapper,
+                               SplitActivityMapper splitActivityMapper) {
         this.splitActivityRepository = splitActivityRepository;
         this.userRepository = userRepository;
         this.groupRepository = groupRepository;
@@ -48,6 +50,7 @@ public class SplitActivityService {
         this.groupMapper = groupMapper;
         this.splitExpenseMapper = splitExpenseMapper;
         this.groupMemberMapper = groupMemberMapper;
+        this.splitActivityMapper = splitActivityMapper;
     }
 
     // ===== ACTIVITY LOGGING METHODS =====
@@ -71,7 +74,7 @@ public class SplitActivityService {
                 null
             );
 
-            splitActivityRepository.save(activity);
+            splitActivityRepository.save(splitActivityMapper.toEntity(activity));
         }
     }
 
@@ -90,7 +93,7 @@ public class SplitActivityService {
             null
         );
 
-        splitActivityRepository.save(activity);
+        splitActivityRepository.save(splitActivityMapper.toEntity(activity));
     }
 
     public void logExpenseCreated(Long expenseId, Long creatorUserId) {
@@ -114,7 +117,7 @@ public class SplitActivityService {
                 expenseId
             );
 
-            splitActivityRepository.save(activity);
+            splitActivityRepository.save(splitActivityMapper.toEntity(activity));
         }
     }
 
@@ -134,7 +137,7 @@ public class SplitActivityService {
             expenseId
         );
 
-        splitActivityRepository.save(activity);
+        splitActivityRepository.save(splitActivityMapper.toEntity(activity));
     }
 
     public void logParticipantSettled(Long expenseId, Long participantUserId, Long updatedByUserId, boolean isSettled) {
@@ -152,7 +155,7 @@ public class SplitActivityService {
             expenseId
         );
 
-        splitActivityRepository.save(activity);
+        splitActivityRepository.save(splitActivityMapper.toEntity(activity));
     }
 
     // ===== ACTIVITY RETRIEVAL METHODS =====
@@ -166,10 +169,10 @@ public class SplitActivityService {
                 case "expenses" -> activities = getExpenseActivitiesForUser(userId, pageable);
                 case "payments" -> activities = getPaymentActivitiesForUser(userId, pageable);
                 case "friends" -> activities = getFriendActivitiesForUser(userId, pageable);
-                default -> activities = splitActivityRepository.findActivitiesForUser(userId, pageable);
+                default -> activities = splitActivityRepository.findActivitiesForUser(userId, pageable).map(splitActivityMapper::toDomain);
             }
         } else {
-            activities = splitActivityRepository.findActivitiesForUser(userId, pageable);
+            activities = splitActivityRepository.findActivitiesForUser(userId, pageable).map(splitActivityMapper::toDomain);
         }
 
         return activities.map(this::convertToActivityResponse);
@@ -181,17 +184,18 @@ public class SplitActivityService {
             throw new RuntimeException("You are not a member of this group");
         }
 
-        Page<SplitActivity> activities = splitActivityRepository.findByGroupIdAndUser(groupId, userId, pageable);
+        Page<SplitActivity> activities = splitActivityRepository.findByGroupIdAndUser(groupId, userId, pageable).map(splitActivityMapper::toDomain);
         return activities.map(this::convertToActivityResponse);
     }
 
     public Page<SplitActivityResponse> getFriendActivities(Long userId, Long friendId, Pageable pageable) {
-        Page<SplitActivity> activities = splitActivityRepository.findFriendActivitiesForUser(userId, friendId, pageable);
+        Page<SplitActivity> activities = splitActivityRepository.findFriendActivitiesForUser(userId, friendId, pageable).map(splitActivityMapper::toDomain);
         return activities.map(this::convertToActivityResponse);
     }
 
     public List<SplitActivityResponse> getRecentActivities(Long userId, int limit) {
-        List<SplitActivity> activities = splitActivityRepository.findRecentActivitiesForUser(userId, limit);
+        var entityPage = splitActivityRepository.findRecentActivitiesForUser(userId, org.springframework.data.domain.PageRequest.of(0, limit));
+        List<SplitActivity> activities = entityPage.stream().map(splitActivityMapper::toDomain).collect(Collectors.toList());
         return activities.stream()
             .map(this::convertToActivityResponse)
             .collect(Collectors.toList());
@@ -210,19 +214,19 @@ public class SplitActivityService {
             .collect(Collectors.toList());
 
         // This would need a custom repository method to filter by group IDs
-        return splitActivityRepository.findActivitiesForUser(userId, pageable);
+        return splitActivityRepository.findActivitiesForUser(userId, pageable).map(splitActivityMapper::toDomain);
     }
 
     private Page<SplitActivity> getExpenseActivitiesForUser(Long userId, Pageable pageable) {
-        return splitActivityRepository.findByActivityTypeAndUser(SplitActivityType.EXPENSE_CREATED, userId, pageable);
+        return splitActivityRepository.findByActivityTypeAndUser(SplitActivityType.EXPENSE_CREATED, userId, pageable).map(splitActivityMapper::toDomain);
     }
 
     private Page<SplitActivity> getPaymentActivitiesForUser(Long userId, Pageable pageable) {
-        return splitActivityRepository.findByActivityTypeAndUser(SplitActivityType.SETTLEMENT_RECORDED, userId, pageable);
+        return splitActivityRepository.findByActivityTypeAndUser(SplitActivityType.SETTLEMENT_RECORDED, userId, pageable).map(splitActivityMapper::toDomain);
     }
 
     private Page<SplitActivity> getFriendActivitiesForUser(Long userId, Pageable pageable) {
-        return splitActivityRepository.findByActivityTypeAndUser(SplitActivityType.FRIEND_ADDED, userId, pageable);
+        return splitActivityRepository.findByActivityTypeAndUser(SplitActivityType.FRIEND_ADDED, userId, pageable).map(splitActivityMapper::toDomain);
     }
 
     private SplitActivityResponse convertToActivityResponse(SplitActivity activity) {
