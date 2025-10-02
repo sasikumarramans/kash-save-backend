@@ -1,0 +1,35 @@
+# Build artifacts
+build/
+.gradle/
+*.jar
+*.war
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+docs/
+
+# CI/CD
+.github/
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
