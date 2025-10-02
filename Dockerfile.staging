@@ -10,12 +10,14 @@ COPY build.gradle .
 COPY settings.gradle .
 
 RUN chmod +x gradlew
+# Download dependencies only (this step is cached if build.gradle/settings.gradle don’t change)
+RUN ./gradlew dependencies --no-daemon --build-cache
 
 # Copy source code
 COPY src src
 
 # Build the application
-RUN ./gradlew build -x test --no-daemon
+RUN ./gradlew build -x test --no-daemon --build-cache
 
 # Runtime stage
 FROM eclipse-temurin:17-jre

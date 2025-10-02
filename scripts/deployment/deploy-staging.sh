@@ -26,7 +26,7 @@ fi
 export $(cat .env.staging | grep -v '^#' | xargs)
 
 echo -e "${YELLOW}Building staging images...${NC}"
-docker compose -f docker-compose.staging.yml build --no-cache
+docker docker compose -f docker-compose.staging.yml build app
 
 echo -e "${YELLOW}Stopping existing staging containers...${NC}"
 docker compose -f docker-compose.staging.yml down -v
