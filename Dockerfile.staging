@@ -2,6 +2,9 @@ FROM eclipse-temurin:17-jdk-alpine as builder
 
 WORKDIR /app
 
+# Install required dependencies for Gradle
+RUN apk add --no-cache bash wget unzip
+
 # Copy gradle wrapper and build files
 COPY gradlew .
 COPY gradle gradle
