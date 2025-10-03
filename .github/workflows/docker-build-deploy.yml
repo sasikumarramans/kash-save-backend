@@ -43,10 +43,11 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: Build and push Docker image
+    - name: Build and push Docker image (staging Dockerfile)
       uses: docker/build-push-action@v5
       with:
         context: .
+        file: Dockerfile.staging   # 👈 force CI/CD to use staging Dockerfile
         platforms: linux/amd64,linux/arm64
         push: true
         tags: ${{ steps.meta.outputs.tags }}
