@@ -1,15 +1,13 @@
-name: Build and Deploy Docker Image
+name: Docker Build and Deploy
 
 on:
   push:
-    branches: [ development ]
-  pull_request:
     branches: [ development ]
   workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: ${{ github.repository }}/kash-save-backend
 
 jobs:
   build-and-push:
@@ -19,73 +17,71 @@ jobs:
       packages: write
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Log in to Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Extract metadata
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest,enable={{is_default_branch}}
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=development-
+            type=raw,value=staging
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        platforms: linux/amd64,linux/arm64
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.staging
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/development'
 
     steps:
-    - name: Deploy to VPS
-      uses: appleboy/ssh-action@v1.0.0
-      with:
-        host: ${{ secrets.VPS_HOST }}
-        username: ${{ secrets.VPS_USERNAME }}
-        key: ${{ secrets.VPS_SSH_KEY }}
-        script: |
-          # Login to GitHub Container Registry
-          echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-          # Pull latest image
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
-
-          # Stop and remove existing container
-          docker stop kash-save-backend || true
-          docker rm kash-save-backend || true
-
-          # Run new container
-          docker run -d \
-            --name kash-save-backend \
-            --restart unless-stopped \
-            -p 8080:8080 \
-            -e SPRING_PROFILES_ACTIVE=prod \
-            -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
-            -e REDIS_URL=${{ secrets.REDIS_URL }} \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
-
-          # Clean up old images
-          docker image prune -f
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /opt/kash-save-backend
+            
+            # Set image name
+            export IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:staging
+            
+            # Pull latest image
+            docker pull $IMAGE_NAME
+            
+            # Stop existing containers
+            docker compose -f docker-compose.staging.yml down
+            
+            # Start with new image
+            docker compose -f docker-compose.staging.yml up -d
+            
+            # Wait and show status
+            sleep 10
+            docker compose -f docker-compose.staging.yml ps
+            docker compose -f docker-compose.staging.yml logs --tail=30 app
+            
+            # Cleanup
+            docker image prune -af --filter "until=24h"

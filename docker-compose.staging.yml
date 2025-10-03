@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   postgres:
     image: postgres:15-alpine
@@ -37,9 +39,12 @@ services:
       retries: 3
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile.staging
+    # CHANGED: Use registry image instead of building
+    image: ${IMAGE_NAME:-ghcr.io/sasikumarramans/kash-save-backend/kash-save-backend:staging}
+    # REMOVED: build section (building happens on GitHub now)
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile.staging
     container_name: kash-save-staging-app
     environment:
       SPRING_PROFILES_ACTIVE: staging
@@ -92,4 +97,4 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.21.0.0/16  # Changed from 172.20.0.0/16 to avoid conflict
+        - subnet: 172.21.0.0/16
