@@ -5,12 +5,12 @@ WORKDIR /app
 # Copy gradle wrapper and build files
 COPY gradlew .
 COPY gradle gradle
-COPY docker/gradle/gradle-8.14.3-bin.zip /app/gradle/
 COPY build.gradle .
 COPY settings.gradle .
 
 RUN chmod +x gradlew
-# Download dependencies only (this step is cached if build.gradle/settings.gradle don’t change)
+
+# Download dependencies only (this step is cached if build.gradle/settings.gradle don't change)
 RUN ./gradlew dependencies --no-daemon --build-cache
 
 # Copy source code
