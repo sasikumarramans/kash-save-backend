@@ -1,9 +1,6 @@
-FROM eclipse-temurin:17-jdk-alpine as builder
+FROM eclipse-temurin:17-jdk as builder
 
 WORKDIR /app
-
-# Install required dependencies for Gradle
-RUN apk add --no-cache bash wget unzip
 
 # Copy gradle wrapper and build files
 COPY gradlew .
@@ -14,13 +11,13 @@ COPY settings.gradle .
 RUN chmod +x gradlew
 
 # Download dependencies only (this step is cached if build.gradle/settings.gradle don't change)
-RUN ./gradlew dependencies --no-daemon --build-cache
+RUN ./gradlew dependencies --no-daemon --build-cache --stacktrace
 
 # Copy source code
 COPY src src
 
 # Build the application
-RUN ./gradlew build -x test --no-daemon --build-cache
+RUN ./gradlew build -x test --no-daemon --build-cache --stacktrace
 
 # Runtime stage
 FROM eclipse-temurin:17-jre
