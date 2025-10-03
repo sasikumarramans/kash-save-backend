@@ -2,22 +2,17 @@ FROM eclipse-temurin:17-jdk as builder
 
 WORKDIR /app
 
-# Copy gradle wrapper and build files
+# Copy all necessary files
 COPY gradlew .
 COPY gradle gradle
 COPY build.gradle .
 COPY settings.gradle .
+COPY src src
 
 RUN chmod +x gradlew
 
-# Download dependencies only (this step is cached if build.gradle/settings.gradle don't change)
-RUN ./gradlew dependencies --no-daemon --build-cache --stacktrace
-
-# Copy source code
-COPY src src
-
-# Build the application
-RUN ./gradlew build -x test --no-daemon --build-cache --stacktrace
+# Build application (Gradle will download from services.gradle.org now)
+RUN ./gradlew build -x test --no-daemon
 
 # Runtime stage
 FROM eclipse-temurin:17-jre
