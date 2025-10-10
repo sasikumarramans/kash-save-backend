@@ -29,7 +29,7 @@ public class AuthenticationService {
 
     public OtpRequest sendOtp(String mobileNumber) {
         validateMobileNumber(mobileNumber);
-        checkOtpRateLimit(mobileNumber);
+        //checkOtpRateLimit(mobileNumber);
 
         // Generate OTP (static 1234 for now)
         String otpCode = "1234";
