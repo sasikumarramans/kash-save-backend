@@ -157,6 +157,8 @@ public class JwtTokenService {
 
     private SecretKey getSigningKey() {
         byte[] keyBytes = secretKey.getBytes();
+        logger.info("JWT Secret Key length: {} characters, {} bytes", secretKey.length(), keyBytes.length);
+        logger.debug("JWT Secret Key (first 10 chars): {}", secretKey.substring(0, Math.min(10, secretKey.length())));
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
