@@ -30,7 +30,7 @@ spring:
 
   security:
     jwt:
-      secret-key: ${JWT_SECRET_KEY:staging-super-secret-key-change-in-production}
+      secret-key: ${JWT_SECRET_KEY:mSpTPXWTxLv92SNuGIogCTNt2p/wU+9H3K3yv09yZt8=}
       expiration: ${JWT_EXPIRATION:3600000}
 
   cache:
