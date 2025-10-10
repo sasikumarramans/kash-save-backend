@@ -57,7 +57,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-Red1s_StaG1ng_2024!}
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-staging-super-secret-key}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-mSpTPXWTxLv92SNuGIogCTNt2p/wU+9H3K3yv09yZt8=}
       CLIENT_TOKEN: ${CLIENT_TOKEN:-Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9}
       MAIL_USERNAME: ${MAIL_USERNAME:-staging@kashsave.com}
       MAIL_PASSWORD: ${MAIL_PASSWORD:-staging_mail_password}

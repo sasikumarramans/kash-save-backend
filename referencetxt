@@ -1,0 +1,14 @@
+Bash(/opt/homebrew/opt/postgresql@15/bin/createuser -s kash_user 2>&1 || echo "User might already exist")
+  ⎿  (No content)
+
+⏺ Bash(/opt/homebrew/opt/postgresql@15/bin/createdb -O kash_user kash_save_db 2>&1 || echo "Database might already exist")
+  ⎿  (No content)
+
+⏺ Bash(/opt/homebrew/opt/postgresql@15/bin/psql -U kash_user -d kash_save_db -c "ALTER USER kash_user WITH PASSWORD 'kash_password';" 2>&1)
+  ⎿  ALTER ROLE
+
+⏺ Perfect! PostgreSQL database is set up. Now let's start the application:
+
+⏺ Bash(./gradlew bootRun --no-daemon 2>&1 | tee app.log &                                          timeout: 1m 0s
+      sleep 15 && tail -100 app.log | grep -E "(Started|JWT|ERROR|Exception)" || tail -50 app.log)
+  ⎿  Error: Command timed out after 1m 0s
