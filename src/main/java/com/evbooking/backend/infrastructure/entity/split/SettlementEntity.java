@@ -15,10 +15,10 @@ public class SettlementEntity {
     private Long id;
 
     @Column(name = "from_user_id", nullable = false)
-    private Long fromUserId;
+    private String fromUserId;
 
     @Column(name = "to_user_id", nullable = false)
-    private Long toUserId;
+    private String toUserId;
 
     @Column(name = "amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal amount;
@@ -37,12 +37,12 @@ public class SettlementEntity {
     private LocalDateTime settlementDate;
 
     @Column(name = "recorded_by_user_id", nullable = false)
-    private Long recordedByUserId;
+    private String recordedByUserId;
 
     public SettlementEntity() {}
 
-    public SettlementEntity(Long fromUserId, Long toUserId, BigDecimal amount, String currency,
-                           Long splitExpenseId, String notes, Long recordedByUserId) {
+    public SettlementEntity(String fromUserId, String toUserId, BigDecimal amount, String currency,
+                           Long splitExpenseId, String notes, String recordedByUserId) {
         this.fromUserId = fromUserId;
         this.toUserId = toUserId;
         this.amount = amount;
@@ -55,11 +55,11 @@ public class SettlementEntity {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Long getFromUserId() { return fromUserId; }
-    public void setFromUserId(Long fromUserId) { this.fromUserId = fromUserId; }
+    public String getFromUserId() { return fromUserId; }
+    public void setFromUserId(String fromUserId) { this.fromUserId = fromUserId; }
 
-    public Long getToUserId() { return toUserId; }
-    public void setToUserId(Long toUserId) { this.toUserId = toUserId; }
+    public String getToUserId() { return toUserId; }
+    public void setToUserId(String toUserId) { this.toUserId = toUserId; }
 
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
@@ -76,6 +76,6 @@ public class SettlementEntity {
     public LocalDateTime getSettlementDate() { return settlementDate; }
     public void setSettlementDate(LocalDateTime settlementDate) { this.settlementDate = settlementDate; }
 
-    public Long getRecordedByUserId() { return recordedByUserId; }
-    public void setRecordedByUserId(Long recordedByUserId) { this.recordedByUserId = recordedByUserId; }
+    public String getRecordedByUserId() { return recordedByUserId; }
+    public void setRecordedByUserId(String recordedByUserId) { this.recordedByUserId = recordedByUserId; }
 }

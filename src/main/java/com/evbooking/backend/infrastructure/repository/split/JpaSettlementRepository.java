@@ -16,9 +16,9 @@ public interface JpaSettlementRepository extends JpaRepository<SettlementEntity,
     @Query("SELECT s FROM SettlementEntity s WHERE s.fromUserId = :userId OR s.toUserId = :userId")
     Page<SettlementEntity> findByUserId(@Param("userId") String userId, Pageable pageable);
 
-    List<SettlementEntity> findByFromUserId(Long fromUserId);
+    List<SettlementEntity> findByFromUserId(String fromUserId);
 
-    List<SettlementEntity> findByToUserId(Long toUserId);
+    List<SettlementEntity> findByToUserId(String toUserId);
 
     @Query("SELECT s FROM SettlementEntity s WHERE (s.fromUserId = :userId1 AND s.toUserId = :userId2) OR (s.fromUserId = :userId2 AND s.toUserId = :userId1)")
     List<SettlementEntity> findBetweenUsers(@Param("userId1") String userId1, @Param("userId2") String userId2);

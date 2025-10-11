@@ -5,19 +5,19 @@ import java.time.LocalDateTime;
 
 public class Settlement {
     private Long id;
-    private Long fromUserId;
-    private Long toUserId;
+    private String fromUserId;
+    private String toUserId;
     private BigDecimal amount;
     private String currency;
     private Long splitExpenseId;
     private String notes;
     private LocalDateTime settlementDate;
-    private Long recordedByUserId;
+    private String recordedByUserId;
 
     public Settlement() {}
 
-    public Settlement(Long fromUserId, Long toUserId, BigDecimal amount, String currency,
-                     Long splitExpenseId, String notes, Long recordedByUserId) {
+    public Settlement(String fromUserId, String toUserId, BigDecimal amount, String currency,
+                     Long splitExpenseId, String notes, String recordedByUserId) {
         this.fromUserId = fromUserId;
         this.toUserId = toUserId;
         this.amount = amount;
@@ -31,11 +31,11 @@ public class Settlement {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Long getFromUserId() { return fromUserId; }
-    public void setFromUserId(Long fromUserId) { this.fromUserId = fromUserId; }
+    public String getFromUserId() { return fromUserId; }
+    public void setFromUserId(String fromUserId) { this.fromUserId = fromUserId; }
 
-    public Long getToUserId() { return toUserId; }
-    public void setToUserId(Long toUserId) { this.toUserId = toUserId; }
+    public String getToUserId() { return toUserId; }
+    public void setToUserId(String toUserId) { this.toUserId = toUserId; }
 
     public BigDecimal getAmount() { return amount; }
     public void setAmount(BigDecimal amount) { this.amount = amount; }
@@ -52,6 +52,6 @@ public class Settlement {
     public LocalDateTime getSettlementDate() { return settlementDate; }
     public void setSettlementDate(LocalDateTime settlementDate) { this.settlementDate = settlementDate; }
 
-    public Long getRecordedByUserId() { return recordedByUserId; }
-    public void setRecordedByUserId(Long recordedByUserId) { this.recordedByUserId = recordedByUserId; }
+    public String getRecordedByUserId() { return recordedByUserId; }
+    public void setRecordedByUserId(String recordedByUserId) { this.recordedByUserId = recordedByUserId; }
 }
