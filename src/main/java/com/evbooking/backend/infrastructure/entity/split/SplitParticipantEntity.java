@@ -19,7 +19,7 @@ public class SplitParticipantEntity {
     private Long splitExpenseId;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private String userId;
 
     @Column(name = "amount_owed", nullable = false, precision = 12, scale = 2)
     private BigDecimal amountOwed;
@@ -39,7 +39,7 @@ public class SplitParticipantEntity {
 
     public SplitParticipantEntity() {}
 
-    public SplitParticipantEntity(Long splitExpenseId, Long userId, BigDecimal amountOwed, BigDecimal splitValue) {
+    public SplitParticipantEntity(Long splitExpenseId, String userId, BigDecimal amountOwed, BigDecimal splitValue) {
         this.splitExpenseId = splitExpenseId;
         this.userId = userId;
         this.amountOwed = amountOwed;
@@ -53,8 +53,8 @@ public class SplitParticipantEntity {
     public Long getSplitExpenseId() { return splitExpenseId; }
     public void setSplitExpenseId(Long splitExpenseId) { this.splitExpenseId = splitExpenseId; }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public BigDecimal getAmountOwed() { return amountOwed; }
     public void setAmountOwed(BigDecimal amountOwed) { this.amountOwed = amountOwed; }

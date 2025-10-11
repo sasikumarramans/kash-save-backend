@@ -28,7 +28,7 @@ public class BalanceController {
             @RequestParam(defaultValue = "all") String filter,
             HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -52,7 +52,7 @@ public class BalanceController {
             @RequestParam(defaultValue = "all") String filter,
             HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -74,7 +74,7 @@ public class BalanceController {
     public ResponseEntity<ApiResponse<OverallBalanceSummaryResponse>> getOverallBalanceSummary(
             HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -99,7 +99,7 @@ public class BalanceController {
             @RequestParam(defaultValue = "false") boolean includeSettled,
             HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -146,7 +146,7 @@ public class BalanceController {
             @RequestParam(defaultValue = "false") boolean includeSettled,
             HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));

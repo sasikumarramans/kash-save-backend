@@ -12,8 +12,8 @@ import java.util.Map;
 @Service
 public class SplitCalculationService {
 
-    public Map<Long, BigDecimal> calculateSplitAmounts(BigDecimal totalAmount, SplitType splitType,
-                                                      Map<Long, BigDecimal> participantSplitValues) {
+    public Map<String, BigDecimal> calculateSplitAmounts(BigDecimal totalAmount, SplitType splitType,
+                                                      Map<String, BigDecimal> participantSplitValues) {
         return switch (splitType) {
             case EQUAL -> calculateEqualSplit(totalAmount, participantSplitValues.keySet().stream().toList());
             case PERCENTAGE -> calculatePercentageSplit(totalAmount, participantSplitValues);
@@ -22,8 +22,8 @@ public class SplitCalculationService {
         };
     }
 
-    private Map<Long, BigDecimal> calculateEqualSplit(BigDecimal totalAmount, List<Long> participantIds) {
-        Map<Long, BigDecimal> result = new HashMap<>();
+    private Map<String, BigDecimal> calculateEqualSplit(BigDecimal totalAmount, List<String> participantIds) {
+        Map<String, BigDecimal> result = new HashMap<>();
         int participantCount = participantIds.size();
 
         if (participantCount == 0) {
@@ -37,7 +37,7 @@ public class SplitCalculationService {
         BigDecimal difference = totalAmount.subtract(totalCalculated);
 
         for (int i = 0; i < participantIds.size(); i++) {
-            Long participantId = participantIds.get(i);
+            String participantId = participantIds.get(i);
             BigDecimal amount = equalAmount;
 
             // Add rounding difference to the first participant
@@ -51,7 +51,7 @@ public class SplitCalculationService {
         return result;
     }
 
-    private Map<Long, BigDecimal> calculatePercentageSplit(BigDecimal totalAmount, Map<Long, BigDecimal> percentages) {
+    private Map<String, BigDecimal> calculatePercentageSplit(BigDecimal totalAmount, Map<String, BigDecimal> percentages) {
         // Validate percentages sum to 100
         BigDecimal totalPercentage = percentages.values().stream()
             .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -60,13 +60,13 @@ public class SplitCalculationService {
             throw new RuntimeException("Percentages must sum to 100%. Current total: " + totalPercentage + "%");
         }
 
-        Map<Long, BigDecimal> result = new HashMap<>();
+        Map<String, BigDecimal> result = new HashMap<>();
         BigDecimal totalCalculated = BigDecimal.ZERO;
 
         // Calculate amounts for all but the last participant
-        List<Long> participantIds = percentages.keySet().stream().toList();
+        List<String> participantIds = percentages.keySet().stream().toList();
         for (int i = 0; i < participantIds.size() - 1; i++) {
-            Long participantId = participantIds.get(i);
+            String participantId = participantIds.get(i);
             BigDecimal percentage = percentages.get(participantId);
             BigDecimal amount = totalAmount.multiply(percentage)
                 .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
@@ -76,14 +76,14 @@ public class SplitCalculationService {
         }
 
         // Last participant gets the remaining amount to handle rounding
-        Long lastParticipant = participantIds.get(participantIds.size() - 1);
+        String lastParticipant = participantIds.get(participantIds.size() - 1);
         BigDecimal lastAmount = totalAmount.subtract(totalCalculated);
         result.put(lastParticipant, lastAmount);
 
         return result;
     }
 
-    private Map<Long, BigDecimal> validateExactSplit(BigDecimal totalAmount, Map<Long, BigDecimal> exactAmounts) {
+    private Map<String, BigDecimal> validateExactSplit(BigDecimal totalAmount, Map<String, BigDecimal> exactAmounts) {
         BigDecimal totalSpecified = exactAmounts.values().stream()
             .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -95,9 +95,9 @@ public class SplitCalculationService {
         return new HashMap<>(exactAmounts);
     }
 
-    private Map<Long, BigDecimal> calculateSharesSplit(BigDecimal totalAmount, Map<Long, BigDecimal> shares) {
+    private Map<String, BigDecimal> calculateSharesSplit(BigDecimal totalAmount, Map<String, BigDecimal> shares) {
         // Validate shares are positive integers
-        for (Map.Entry<Long, BigDecimal> entry : shares.entrySet()) {
+        for (Map.Entry<String, BigDecimal> entry : shares.entrySet()) {
             BigDecimal share = entry.getValue();
             if (share == null || share.compareTo(BigDecimal.ZERO) <= 0 ||
                 share.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) != 0) {
@@ -114,13 +114,13 @@ public class SplitCalculationService {
 
         BigDecimal amountPerShare = totalAmount.divide(totalShares, 2, RoundingMode.HALF_UP);
 
-        Map<Long, BigDecimal> result = new HashMap<>();
+        Map<String, BigDecimal> result = new HashMap<>();
         BigDecimal totalCalculated = BigDecimal.ZERO;
 
         // Calculate amounts for all but the last participant
-        List<Long> participantIds = shares.keySet().stream().toList();
+        List<String> participantIds = shares.keySet().stream().toList();
         for (int i = 0; i < participantIds.size() - 1; i++) {
-            Long participantId = participantIds.get(i);
+            String participantId = participantIds.get(i);
             BigDecimal userShares = shares.get(participantId);
             BigDecimal amount = amountPerShare.multiply(userShares);
 
@@ -129,7 +129,7 @@ public class SplitCalculationService {
         }
 
         // Last participant gets the remaining amount to handle rounding
-        Long lastParticipant = participantIds.get(participantIds.size() - 1);
+        String lastParticipant = participantIds.get(participantIds.size() - 1);
         BigDecimal lastAmount = totalAmount.subtract(totalCalculated);
         result.put(lastParticipant, lastAmount);
 
@@ -137,7 +137,7 @@ public class SplitCalculationService {
     }
 
     public void validateSplitRequest(BigDecimal totalAmount, SplitType splitType,
-                                   Map<Long, BigDecimal> participantSplitValues) {
+                                   Map<String, BigDecimal> participantSplitValues) {
         if (totalAmount == null || totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new RuntimeException("Total amount must be greater than 0");
         }

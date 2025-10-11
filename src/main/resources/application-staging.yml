@@ -27,6 +27,7 @@ spring:
 
   liquibase:
     contexts: staging
+    drop-first: true
 
   security:
     jwt:

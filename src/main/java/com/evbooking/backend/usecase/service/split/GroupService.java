@@ -38,7 +38,7 @@ public class GroupService {
         this.groupMemberMapper = groupMemberMapper;
     }
 
-    public Group createGroup(String name, String description, String currency, List<String> memberUsernames, Long adminUserId) {
+    public Group createGroup(String name, String description, String currency, List<String> memberUsernames, String adminUserId) {
         // Validate admin user exists
         if (!userRepository.findById(adminUserId).isPresent()) {
             throw new RuntimeException("Admin user not found");
@@ -69,18 +69,18 @@ public class GroupService {
                     groupMemberRepository.save(groupMemberMapper.toEntity(member));
 
                     // Log member added activity
-                    splitActivityService.logMemberAdded(group.getId(), user.getId(), adminUserId);
+                    splitActivityService.logMemberAdded(group.getId(), user.getId().toString(), adminUserId);
                 }
             }
         }
 
         // Log group creation activity
-        splitActivityService.logGroupCreated(group.getId(), adminUserId);
+        splitActivityService.logGroupCreated(group.getId(), adminUserId.toString());
 
         return group;
     }
 
-    public Optional<Group> getGroupById(Long groupId, Long userId) {
+    public Optional<Group> getGroupById(Long groupId, String userId) {
         // Check if user is a member of the group
         if (!groupMemberRepository.existsByGroupIdAndUserId(groupId, userId)) {
             return Optional.empty();
@@ -89,7 +89,7 @@ public class GroupService {
         return groupRepository.findById(groupId).map(groupMapper::toDomain);
     }
 
-    public Page<Group> getUserGroups(Long userId, Pageable pageable) {
+    public Page<Group> getUserGroups(String userId, Pageable pageable) {
         var entityPage = groupRepository.findGroupsByMemberId(userId, pageable);
         var domainList = entityPage.getContent().stream()
             .map(groupMapper::toDomain)
@@ -97,7 +97,7 @@ public class GroupService {
         return new PageImpl<>(domainList, pageable, entityPage.getTotalElements());
     }
 
-    public List<GroupMember> getGroupMembers(Long groupId, Long userId) {
+    public List<GroupMember> getGroupMembers(Long groupId, String userId) {
         // Check if user is a member of the group
         if (!groupMemberRepository.existsByGroupIdAndUserId(groupId, userId)) {
             throw new RuntimeException("You are not a member of this group");
@@ -109,7 +109,7 @@ public class GroupService {
             .collect(Collectors.toList());
     }
 
-    public GroupMember addMemberToGroup(Long groupId, String username, Long adminUserId) {
+    public GroupMember addMemberToGroup(Long groupId, String username, String adminUserId) {
         // Verify admin permissions
         var adminMemberEntityOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, adminUserId);
         if (adminMemberEntityOpt.isEmpty() || !groupMemberMapper.toDomain(adminMemberEntityOpt.get()).isAdmin()) {
@@ -139,7 +139,7 @@ public class GroupService {
         return savedMember;
     }
 
-    public void removeMemberFromGroup(Long groupId, Long userIdToRemove, Long adminUserId) {
+    public void removeMemberFromGroup(Long groupId, String userIdToRemove, String adminUserId) {
         // Verify admin permissions
         var adminMemberEntityOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, adminUserId);
         if (adminMemberEntityOpt.isEmpty() || !groupMemberMapper.toDomain(adminMemberEntityOpt.get()).isAdmin()) {
@@ -163,7 +163,7 @@ public class GroupService {
         groupMemberRepository.deleteByGroupIdAndUserId(groupId, userIdToRemove);
     }
 
-    public void leaveGroup(Long groupId, Long userId) {
+    public void leaveGroup(Long groupId, String userId) {
         // Check if user is a member
         if (!groupMemberRepository.existsByGroupIdAndUserId(groupId, userId)) {
             throw new RuntimeException("You are not a member of this group");
@@ -191,7 +191,7 @@ public class GroupService {
         groupMemberRepository.deleteByGroupIdAndUserId(groupId, userId);
     }
 
-    public void deleteGroup(Long groupId, Long adminUserId) {
+    public void deleteGroup(Long groupId, String adminUserId) {
         // Verify admin permissions
         var adminMemberEntityOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, adminUserId);
         if (adminMemberEntityOpt.isEmpty() || !groupMemberMapper.toDomain(adminMemberEntityOpt.get()).isAdmin()) {
@@ -206,7 +206,7 @@ public class GroupService {
         groupRepository.deleteById(groupId);
     }
 
-    public GroupMember makeAdmin(Long groupId, Long userIdToPromote, Long currentAdminUserId) {
+    public GroupMember makeAdmin(Long groupId, String userIdToPromote, String currentAdminUserId) {
         // Verify current admin permissions
         var currentAdminEntityOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, currentAdminUserId);
         if (currentAdminEntityOpt.isEmpty() || !groupMemberMapper.toDomain(currentAdminEntityOpt.get()).isAdmin()) {
@@ -229,7 +229,7 @@ public class GroupService {
         return groupMemberMapper.toDomain(savedEntity);
     }
 
-    public Group updateGroup(Long groupId, String name, String description, String currency, Long adminUserId) {
+    public Group updateGroup(Long groupId, String name, String description, String currency, String adminUserId) {
         // Verify admin permissions
         var adminMemberEntityOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, adminUserId);
         if (adminMemberEntityOpt.isEmpty() || !groupMemberMapper.toDomain(adminMemberEntityOpt.get()).isAdmin()) {
@@ -256,11 +256,11 @@ public class GroupService {
         return groupMapper.toDomain(savedEntity);
     }
 
-    public boolean isGroupMember(Long groupId, Long userId) {
+    public boolean isGroupMember(Long groupId, String userId) {
         return groupMemberRepository.existsByGroupIdAndUserId(groupId, userId);
     }
 
-    public boolean isGroupAdmin(Long groupId, Long userId) {
+    public boolean isGroupAdmin(Long groupId, String userId) {
         var memberEntityOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, userId);
         return memberEntityOpt.isPresent() && groupMemberMapper.toDomain(memberEntityOpt.get()).isAdmin();
     }

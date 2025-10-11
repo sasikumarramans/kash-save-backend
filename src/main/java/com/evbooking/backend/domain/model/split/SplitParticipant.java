@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 public class SplitParticipant {
     private Long id;
     private Long splitExpenseId;
-    private Long userId;
+    private String userId;
     private BigDecimal amountOwed;
     private BigDecimal splitValue;
     private boolean isSettled;
@@ -15,7 +15,7 @@ public class SplitParticipant {
 
     public SplitParticipant() {}
 
-    public SplitParticipant(Long splitExpenseId, Long userId, BigDecimal amountOwed, BigDecimal splitValue) {
+    public SplitParticipant(Long splitExpenseId, String userId, BigDecimal amountOwed, BigDecimal splitValue) {
         this.splitExpenseId = splitExpenseId;
         this.userId = userId;
         this.amountOwed = amountOwed;
@@ -30,8 +30,8 @@ public class SplitParticipant {
     public Long getSplitExpenseId() { return splitExpenseId; }
     public void setSplitExpenseId(Long splitExpenseId) { this.splitExpenseId = splitExpenseId; }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public BigDecimal getAmountOwed() { return amountOwed; }
     public void setAmountOwed(BigDecimal amountOwed) { this.amountOwed = amountOwed; }

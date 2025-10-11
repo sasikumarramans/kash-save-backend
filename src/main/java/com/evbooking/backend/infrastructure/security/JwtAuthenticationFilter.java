@@ -62,7 +62,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (jwt != null && jwtTokenService.validateToken(jwt)) {
                 // Extract user information from JWT
                 String phoneNumber = jwtTokenService.extractPhoneNumber(jwt);
-                Long userId = jwtTokenService.extractUserId(jwt);
+                String userId = jwtTokenService.extractUserId(jwt);
                 String role = jwtTokenService.extractRole(jwt);
 
                 if (phoneNumber != null && userId != null) {

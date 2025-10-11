@@ -36,7 +36,7 @@ public class SplitActivityController {
             @RequestParam(defaultValue = "desc") String sortDir,
             HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -63,7 +63,7 @@ public class SplitActivityController {
             @RequestParam(defaultValue = "10") int limit,
             HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -90,7 +90,7 @@ public class SplitActivityController {
             @RequestParam(defaultValue = "desc") String sortDir,
             HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -114,14 +114,14 @@ public class SplitActivityController {
      */
     @GetMapping("/friends/{friendId}")
     public ResponseEntity<ApiResponse<Page<SplitActivityResponse>>> getFriendActivities(
-            @PathVariable Long friendId,
+            @PathVariable String friendId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDir,
             HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -147,7 +147,7 @@ public class SplitActivityController {
     public ResponseEntity<ApiResponse<ActivitySummaryResponse>> getActivitySummary(
             HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));

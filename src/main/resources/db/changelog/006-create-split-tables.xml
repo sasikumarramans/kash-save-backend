@@ -13,7 +13,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="description" type="TEXT"/>
-            <column name="admin_user_id" type="BIGINT">
+            <column name="admin_user_id" type="VARCHAR(36)">
                 <constraints nullable="false"/>
             </column>
             <column name="currency" type="VARCHAR(3)" defaultValue="INR">
@@ -40,7 +40,7 @@
             <column name="group_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="user_id" type="BIGINT">
+            <column name="user_id" type="VARCHAR(36)">
                 <constraints nullable="false"/>
             </column>
             <column name="is_admin" type="BOOLEAN" defaultValue="false">
@@ -78,14 +78,14 @@
             <column name="currency" type="VARCHAR(3)" defaultValue="INR">
                 <constraints nullable="false"/>
             </column>
-            <column name="paid_by_user_id" type="BIGINT">
+            <column name="paid_by_user_id" type="VARCHAR(36)">
                 <constraints nullable="false"/>
             </column>
             <column name="group_id" type="BIGINT"/>
             <column name="split_type" type="VARCHAR(20)" defaultValue="EQUAL">
                 <constraints nullable="false"/>
             </column>
-            <column name="created_by_user_id" type="BIGINT">
+            <column name="created_by_user_id" type="VARCHAR(36)">
                 <constraints nullable="false"/>
             </column>
             <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
@@ -117,7 +117,7 @@
             <column name="split_expense_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="user_id" type="BIGINT">
+            <column name="user_id" type="VARCHAR(36)">
                 <constraints nullable="false"/>
             </column>
             <column name="amount_owed" type="DECIMAL(12,2)">
@@ -151,10 +151,10 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="from_user_id" type="BIGINT">
+            <column name="from_user_id" type="VARCHAR(36)">
                 <constraints nullable="false"/>
             </column>
-            <column name="to_user_id" type="BIGINT">
+            <column name="to_user_id" type="VARCHAR(36)">
                 <constraints nullable="false"/>
             </column>
             <column name="amount" type="DECIMAL(12,2)">
@@ -168,7 +168,7 @@
             <column name="settlement_date" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
-            <column name="recorded_by_user_id" type="BIGINT">
+            <column name="recorded_by_user_id" type="VARCHAR(36)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -195,14 +195,14 @@
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
-            <column name="user_id" type="BIGINT">
+            <column name="user_id" type="VARCHAR(36)">
                 <constraints nullable="false"/>
             </column>
             <column name="activity_type" type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
             <column name="activity_data" type="TEXT"/>
-            <column name="related_user_id" type="BIGINT"/>
+            <column name="related_user_id" type="VARCHAR(36)"/>
             <column name="group_id" type="BIGINT"/>
             <column name="split_expense_id" type="BIGINT"/>
             <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">

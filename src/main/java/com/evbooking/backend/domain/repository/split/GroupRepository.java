@@ -15,12 +15,12 @@ import java.util.Optional;
 public interface GroupRepository extends JpaRepository<GroupEntity, Long> {
 
     @Query("SELECT g FROM GroupEntity g JOIN GroupMemberEntity gm ON g.id = gm.groupId WHERE gm.userId = :userId")
-    Page<GroupEntity> findGroupsByMemberId(@Param("userId") Long userId, Pageable pageable);
+    Page<GroupEntity> findGroupsByMemberId(@Param("userId") String userId, Pageable pageable);
 
     @Query("SELECT g FROM GroupEntity g JOIN GroupMemberEntity gm ON g.id = gm.groupId WHERE g.id = :groupId AND gm.userId = :userId")
-    Optional<GroupEntity> findByIdAndUserId(@Param("groupId") Long groupId, @Param("userId") Long userId);
+    Optional<GroupEntity> findByIdAndUserId(@Param("groupId") String userId);
 
-    List<GroupEntity> findByAdminUserId(Long adminUserId);
+    List<GroupEntity> findByAdminUserId(String adminUserId);
 
-    boolean existsByIdAndAdminUserId(Long id, Long adminUserId);
+    boolean existsByIdAndAdminUserId(Long id, String adminUserId);
 }

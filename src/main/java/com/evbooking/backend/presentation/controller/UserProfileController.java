@@ -27,7 +27,7 @@ public class UserProfileController {
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<UserProfileResponse>> getUserProfile(HttpServletRequest request) {
         try {
-            Long userId = (Long) request.getAttribute("userId");
+            String userId = (String) request.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -70,7 +70,7 @@ public class UserProfileController {
             @RequestParam(value = "profileImage", required = false) MultipartFile profileImage,
             HttpServletRequest servletRequest) {
         try {
-            Long userId = (Long) servletRequest.getAttribute("userId");
+            String userId = (String) servletRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));

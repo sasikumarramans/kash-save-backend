@@ -27,7 +27,7 @@ public class BookRepositoryImpl implements BookRepository {
     }
 
     @Override
-    public List<Book> findByUserId(Long userId) {
+    public List<Book> findByUserId(String userId) {
         return jpaBookRepository.findByUserIdOrderByCreatedAtDesc(userId)
                 .stream()
                 .map(this::toDomain)
@@ -35,7 +35,7 @@ public class BookRepositoryImpl implements BookRepository {
     }
 
     @Override
-    public Page<Book> findByUserId(Long userId, Pageable pageable) {
+    public Page<Book> findByUserId(String userId, Pageable pageable) {
         Page<BookEntity> entityPage = jpaBookRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
         List<Book> books = entityPage.getContent().stream()
                 .map(this::toDomain)

@@ -122,7 +122,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<String>> logoutAllDevices(HttpServletRequest request) {
         try {
             // Get user ID from request attributes (set by JWT filter)
-            Long userId = (Long) request.getAttribute("userId");
+            String userId = (String) request.getAttribute("userId");
 
             if (userId == null) {
                 return ResponseEntity.badRequest()

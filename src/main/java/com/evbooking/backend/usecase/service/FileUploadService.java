@@ -33,7 +33,7 @@ public class FileUploadService {
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
-    public String uploadProfileImage(MultipartFile file, Long userId) throws IOException {
+    public String uploadProfileImage(MultipartFile file, String userId) throws IOException {
         validateFile(file);
 
         // Create upload directory if it doesn't exist

@@ -61,7 +61,7 @@ public class PdfExportService {
         this.splitParticipantMapper = splitParticipantMapper;
     }
 
-    public byte[] generateGroupReport(Long groupId, Long userId) {
+    public byte[] generateGroupReport(Long groupId, String userId) {
         // Verify user has access to this group
         if (!groupMemberRepository.existsByGroupIdAndUserId(groupId, userId)) {
             throw new RuntimeException("You are not a member of this group");
@@ -102,7 +102,7 @@ public class PdfExportService {
         }
     }
 
-    public byte[] generateIndividualReport(Long userId) {
+    public byte[] generateIndividualReport(String userId) {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
             throw new RuntimeException("User not found");
@@ -138,7 +138,7 @@ public class PdfExportService {
         }
     }
 
-    public byte[] generateFriendReport(Long userId, Long friendId) {
+    public byte[] generateFriendReport(String userId, String friendId) {
         // Verify users exist
         Optional<User> userOpt = userRepository.findById(userId);
         Optional<User> friendOpt = userRepository.findById(friendId);
@@ -271,7 +271,7 @@ public class PdfExportService {
         document.add(new Paragraph("\n"));
     }
 
-    private void addGroupExpensesSection(Document document, Long groupId, Long userId) {
+    private void addGroupExpensesSection(Document document, Long groupId, String userId) {
         Paragraph sectionTitle = new Paragraph("Group Expenses")
             .setFontSize(16)
             .setBold()
@@ -314,7 +314,7 @@ public class PdfExportService {
         document.add(new Paragraph("\n"));
     }
 
-    private void addGroupBalanceSummary(Document document, Long groupId, Long userId) {
+    private void addGroupBalanceSummary(Document document, Long groupId, String userId) {
         Paragraph sectionTitle = new Paragraph("Balance Summary")
             .setFontSize(16)
             .setBold()
@@ -370,7 +370,7 @@ public class PdfExportService {
             .map(splitExpenseMapper::toDomain)
             .collect(java.util.stream.Collectors.toList());
 
-        Map<Long, BigDecimal> netBalances = new HashMap<>();
+        Map<String, BigDecimal> netBalances = new HashMap<>();
         String currency = "INR"; // Default currency
 
         // Calculate net balances for each member
@@ -410,7 +410,7 @@ public class PdfExportService {
         table.addHeaderCell(new Cell().add(new Paragraph("Net Balance").setBold()));
         table.addHeaderCell(new Cell().add(new Paragraph("Status").setBold()));
 
-        for (Map.Entry<Long, BigDecimal> entry : netBalances.entrySet()) {
+        for (Map.Entry<String, BigDecimal> entry : netBalances.entrySet()) {
             Optional<User> userOpt = userRepository.findById(entry.getKey());
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
@@ -433,7 +433,7 @@ public class PdfExportService {
         document.add(new Paragraph("\n"));
     }
 
-    private void addFriendsBalancesSection(Document document, Long userId) {
+    private void addFriendsBalancesSection(Document document, String userId) {
         Paragraph sectionTitle = new Paragraph("Friends Balances")
             .setFontSize(16)
             .setBold()
@@ -466,7 +466,7 @@ public class PdfExportService {
         document.add(new Paragraph("\n"));
     }
 
-    private void addGroupsBalancesSection(Document document, Long userId) {
+    private void addGroupsBalancesSection(Document document, String userId) {
         Paragraph sectionTitle = new Paragraph("Groups Balances")
             .setFontSize(16)
             .setBold()
@@ -499,7 +499,7 @@ public class PdfExportService {
         document.add(new Paragraph("\n"));
     }
 
-    private void addRecentExpensesSection(Document document, Long userId) {
+    private void addRecentExpensesSection(Document document, String userId) {
         Paragraph sectionTitle = new Paragraph("Recent Expenses")
             .setFontSize(16)
             .setBold()
@@ -537,7 +537,7 @@ public class PdfExportService {
         document.add(new Paragraph("\n"));
     }
 
-    private void addOverallSummarySection(Document document, Long userId) {
+    private void addOverallSummarySection(Document document, String userId) {
         Paragraph sectionTitle = new Paragraph("Overall Summary")
             .setFontSize(16)
             .setBold()
@@ -578,7 +578,7 @@ public class PdfExportService {
         document.add(table);
     }
 
-    private void addSharedExpensesSection(Document document, Long userId, Long friendId) {
+    private void addSharedExpensesSection(Document document, String userId, String friendId) {
         Paragraph sectionTitle = new Paragraph("Shared Expenses")
             .setFontSize(16)
             .setBold()
@@ -634,7 +634,7 @@ public class PdfExportService {
         document.add(new Paragraph("\n"));
     }
 
-    private void addFriendBalanceSummary(Document document, Long userId, Long friendId) {
+    private void addFriendBalanceSummary(Document document, String userId, String friendId) {
         Paragraph sectionTitle = new Paragraph("Balance Summary")
             .setFontSize(16)
             .setBold()

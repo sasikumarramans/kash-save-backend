@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Service
 public class EntryDomainService {
 
-    public void validateEntryCreation(String name, BigDecimal amount, EntryType type, Long bookId, Long userId) {
+    public void validateEntryCreation(String name, BigDecimal amount, EntryType type, Long bookId, String userId) {
         if (name == null || name.trim().isEmpty()) {
             throw new RuntimeException("Entry name is required");
         }
@@ -32,8 +32,8 @@ public class EntryDomainService {
         }
     }
 
-    public Entry createEntry(String name, String description, BigDecimal amount, String currency, EntryType type,
-                           LocalDateTime dateTime, Long bookId, Long userId) {
+    public Entry createEntry(Long bookId, String name, String description, BigDecimal amount, String currency, EntryType type,
+                           LocalDateTime dateTime, String userId) {
         validateEntryCreation(name, amount, type, bookId, userId);
 
         if (dateTime == null) {

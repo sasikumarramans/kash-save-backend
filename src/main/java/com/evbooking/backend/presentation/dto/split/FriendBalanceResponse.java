@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 public class FriendBalanceResponse {
-    private Long friendUserId;
+    private String friendUserId;
     private String friendUsername;
     private String friendEmail;
     private BigDecimal balance; // Positive = they owe you, Negative = you owe them
@@ -22,7 +22,7 @@ public class FriendBalanceResponse {
 
     public FriendBalanceResponse() {}
 
-    public FriendBalanceResponse(Long friendUserId, String friendUsername, String friendEmail,
+    public FriendBalanceResponse(String friendUserId, String friendUsername, String friendEmail,
                                BigDecimal balance, BigDecimal youOwe, BigDecimal owesYou,
                                String currency, int expenseCount, int settledCount, int pendingCount,
                                LocalDateTime lastActivity) {
@@ -40,8 +40,8 @@ public class FriendBalanceResponse {
     }
 
     // Getters and setters
-    public Long getFriendUserId() { return friendUserId; }
-    public void setFriendUserId(Long friendUserId) { this.friendUserId = friendUserId; }
+    public String getFriendUserId() { return friendUserId; }
+    public void setFriendUserId(String friendUserId) { this.friendUserId = friendUserId; }
 
     public String getFriendUsername() { return friendUsername; }
     public void setFriendUsername(String friendUsername) { this.friendUsername = friendUsername; }

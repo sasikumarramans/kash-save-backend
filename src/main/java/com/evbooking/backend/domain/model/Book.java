@@ -7,13 +7,13 @@ public class Book {
     private String name;
     private String description;
     private String currency;
-    private Long userId;
+    private String userId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public Book() {}
 
-    public Book(String name, String description, String currency, Long userId) {
+    public Book(String name, String description, String currency, String userId) {
         this.name = name;
         this.description = description;
         this.currency = currency != null ? currency : "INR";
@@ -34,8 +34,8 @@ public class Book {
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) { this.currency = currency; }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

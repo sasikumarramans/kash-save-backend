@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 
 public class GroupMemberResponse {
-    private Long userId;
+    private String userId;
     private String username;
     private String email;
     private boolean isAdmin;
@@ -15,7 +15,7 @@ public class GroupMemberResponse {
 
     public GroupMemberResponse() {}
 
-    public GroupMemberResponse(Long userId, String username, String email, boolean isAdmin, LocalDateTime joinedAt) {
+    public GroupMemberResponse(String userId, String username, String email, boolean isAdmin, LocalDateTime joinedAt) {
         this.userId = userId;
         this.username = username;
         this.email = email;
@@ -23,8 +23,8 @@ public class GroupMemberResponse {
         this.joinedAt = joinedAt;
     }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }

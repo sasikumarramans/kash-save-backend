@@ -18,7 +18,7 @@ public class GroupMemberEntity {
     private Long groupId;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private String userId;
 
     @Column(name = "is_admin", nullable = false)
     private boolean isAdmin = false;
@@ -29,7 +29,7 @@ public class GroupMemberEntity {
 
     public GroupMemberEntity() {}
 
-    public GroupMemberEntity(Long groupId, Long userId, boolean isAdmin) {
+    public GroupMemberEntity(Long groupId, String userId, boolean isAdmin) {
         this.groupId = groupId;
         this.userId = userId;
         this.isAdmin = isAdmin;
@@ -41,8 +41,8 @@ public class GroupMemberEntity {
     public Long getGroupId() { return groupId; }
     public void setGroupId(Long groupId) { this.groupId = groupId; }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public boolean isAdmin() { return isAdmin; }
     public void setAdmin(boolean admin) { isAdmin = admin; }

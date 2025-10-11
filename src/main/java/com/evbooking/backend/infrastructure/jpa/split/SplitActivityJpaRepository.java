@@ -23,7 +23,7 @@ public interface SplitActivityJpaRepository extends JpaRepository<SplitActivityE
            ))
         ORDER BY sa.createdAt DESC
     """)
-    Page<SplitActivityEntity> findActivitiesForUser(@Param("userId") Long userId, Pageable pageable);
+    Page<SplitActivityEntity> findActivitiesForUser(@Param("userId") String userId, Pageable pageable);
 
     @Query("""
         SELECT sa FROM SplitActivityEntity sa
@@ -34,7 +34,7 @@ public interface SplitActivityJpaRepository extends JpaRepository<SplitActivityE
            ))
         ORDER BY sa.createdAt DESC
     """)
-    List<SplitActivityEntity> findActivitiesForUser(@Param("userId") Long userId);
+    List<SplitActivityEntity> findActivitiesForUser(@Param("userId") String userId);
 
     // Find activities by type for user
     @Query("""
@@ -48,7 +48,7 @@ public interface SplitActivityJpaRepository extends JpaRepository<SplitActivityE
         ORDER BY sa.createdAt DESC
     """)
     Page<SplitActivityEntity> findByActivityTypeAndUser(@Param("activityType") SplitActivityType activityType,
-                                                       @Param("userId") Long userId,
+                                                       @Param("userId") String userId,
                                                        Pageable pageable);
 
     // Find activities within date range for user
@@ -64,7 +64,7 @@ public interface SplitActivityJpaRepository extends JpaRepository<SplitActivityE
     """)
     Page<SplitActivityEntity> findByCreatedAtBetweenAndUser(@Param("startDate") LocalDateTime startDate,
                                                            @Param("endDate") LocalDateTime endDate,
-                                                           @Param("userId") Long userId,
+                                                           @Param("userId") String userId,
                                                            Pageable pageable);
 
     // Find group activities for user
@@ -77,7 +77,7 @@ public interface SplitActivityJpaRepository extends JpaRepository<SplitActivityE
         ORDER BY sa.createdAt DESC
     """)
     Page<SplitActivityEntity> findByGroupIdAndUser(@Param("groupId") Long groupId,
-                                                  @Param("userId") Long userId,
+                                                  @Param("userId") String userId,
                                                   Pageable pageable);
 
     List<SplitActivityEntity> findByGroupIdOrderByCreatedAtDesc(Long groupId);
@@ -90,7 +90,7 @@ public interface SplitActivityJpaRepository extends JpaRepository<SplitActivityE
         ORDER BY sa.createdAt DESC
     """)
     Page<SplitActivityEntity> findBySplitExpenseIdAndUser(@Param("splitExpenseId") Long splitExpenseId,
-                                                         @Param("userId") Long userId,
+                                                         @Param("userId") String userId,
                                                          Pageable pageable);
 
     List<SplitActivityEntity> findBySplitExpenseIdOrderByCreatedAtDesc(Long splitExpenseId);
@@ -110,7 +110,7 @@ public interface SplitActivityJpaRepository extends JpaRepository<SplitActivityE
            ))
         ORDER BY sa.createdAt DESC
     """)
-    Page<SplitActivityEntity> findFriendActivitiesForUser(@Param("userId") Long userId,
+    Page<SplitActivityEntity> findFriendActivitiesForUser(@Param("userId") String userId,
                                                          @Param("friendId") Long friendId,
                                                          Pageable pageable);
 
@@ -125,7 +125,7 @@ public interface SplitActivityJpaRepository extends JpaRepository<SplitActivityE
         ORDER BY sa.created_at DESC
         LIMIT :limit
     """, nativeQuery = true)
-    List<SplitActivityEntity> findRecentActivitiesForUser(@Param("userId") Long userId, @Param("limit") int limit);
+    List<SplitActivityEntity> findRecentActivitiesForUser(@Param("userId") String userId, @Param("limit") int limit);
 
     // Delete methods
     void deleteByGroupId(Long groupId);

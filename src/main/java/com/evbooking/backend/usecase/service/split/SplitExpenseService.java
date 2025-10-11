@@ -55,7 +55,7 @@ public class SplitExpenseService {
 
     public SplitExpense createSplitExpense(String description, BigDecimal totalAmount, String currency,
                                          String paidByUsername, Long groupId, SplitType splitType,
-                                         Map<String, BigDecimal> participantSplitValues, Long createdByUserId) {
+                                         Map<String, BigDecimal> participantSplitValues, String createdByUserId) {
 
         // Find paid by user
         Optional<User> paidByUserOpt = userRepository.findByUsername(paidByUsername);
@@ -75,7 +75,7 @@ public class SplitExpenseService {
         }
 
         // Convert usernames to user IDs and validate
-        Map<Long, BigDecimal> participantSplitMap = new HashMap<>();
+        Map<String, BigDecimal> participantSplitMap = new HashMap<>();
         for (Map.Entry<String, BigDecimal> entry : participantSplitValues.entrySet()) {
             Optional<User> userOpt = userRepository.findByUsername(entry.getKey());
             if (userOpt.isEmpty()) {
@@ -96,7 +96,7 @@ public class SplitExpenseService {
         splitCalculationService.validateSplitRequest(totalAmount, splitType, participantSplitMap);
 
         // Calculate individual amounts
-        Map<Long, BigDecimal> calculatedAmounts = splitCalculationService.calculateSplitAmounts(
+        Map<String, BigDecimal> calculatedAmounts = splitCalculationService.calculateSplitAmounts(
             totalAmount, splitType, participantSplitMap);
 
         // Create split expense
@@ -106,8 +106,8 @@ public class SplitExpenseService {
         splitExpense = splitExpenseMapper.toDomain(savedEntity);
 
         // Create split participants
-        for (Map.Entry<Long, BigDecimal> entry : calculatedAmounts.entrySet()) {
-            Long userId = entry.getKey();
+        for (Map.Entry<String, BigDecimal> entry : calculatedAmounts.entrySet()) {
+            String userId = entry.getKey();
             BigDecimal amountOwed = entry.getValue();
             BigDecimal splitValue = participantSplitMap.get(userId);
 
@@ -127,7 +127,7 @@ public class SplitExpenseService {
         return splitExpense;
     }
 
-    public Optional<SplitExpense> getSplitExpenseById(Long expenseId, Long userId) {
+    public Optional<SplitExpense> getSplitExpenseById(Long expenseId, String userId) {
         var expenseEntityOpt = splitExpenseRepository.findById(expenseId);
         if (expenseEntityOpt.isEmpty()) {
             return Optional.empty();
@@ -158,7 +158,7 @@ public class SplitExpenseService {
         return Optional.of(expense);
     }
 
-    public Page<SplitExpense> getUserSplitExpenses(Long userId, Pageable pageable) {
+    public Page<SplitExpense> getUserSplitExpenses(String userId, Pageable pageable) {
         var entityPage = splitExpenseRepository.findExpensesByParticipantUserIdPaged(userId, pageable);
         var domainList = entityPage.getContent().stream()
             .map(splitExpenseMapper::toDomain)
@@ -166,7 +166,7 @@ public class SplitExpenseService {
         return new PageImpl<>(domainList, pageable, entityPage.getTotalElements());
     }
 
-    public Page<SplitExpense> getGroupSplitExpenses(Long groupId, Long userId, Pageable pageable) {
+    public Page<SplitExpense> getGroupSplitExpenses(Long groupId, String userId, Pageable pageable) {
         // Verify group membership
         if (!groupService.isGroupMember(groupId, userId)) {
             throw new RuntimeException("You are not a member of this group");
@@ -174,7 +174,7 @@ public class SplitExpenseService {
 
         // Get group members to include individual expenses between them
         var groupMemberEntities = groupMemberRepository.findByGroupId(groupId);
-        List<Long> memberUserIds = groupMemberEntities.stream()
+        List<String> memberUserIds = groupMemberEntities.stream()
             .map(entity -> entity.getUserId())
             .collect(Collectors.toList());
 
@@ -186,7 +186,7 @@ public class SplitExpenseService {
         return new PageImpl<>(domainList, pageable, entityPage.getTotalElements());
     }
 
-    public Page<SplitExpense> getIndividualSplitExpenses(Long userId, Pageable pageable) {
+    public Page<SplitExpense> getIndividualSplitExpenses(String userId, Pageable pageable) {
         // Get all individual (non-group) expenses where user is involved
         var entityPage = splitExpenseRepository.findByGroupIdIsNull(userId, pageable);
         var domainList = entityPage.getContent().stream()
@@ -195,7 +195,7 @@ public class SplitExpenseService {
         return new PageImpl<>(domainList, pageable, entityPage.getTotalElements());
     }
 
-    public List<SplitParticipant> getSplitParticipants(Long expenseId, Long userId) {
+    public List<SplitParticipant> getSplitParticipants(Long expenseId, String userId) {
         // Verify user can access this expense
         if (getSplitExpenseById(expenseId, userId).isEmpty()) {
             throw new RuntimeException("Split expense not found or access denied");
@@ -207,7 +207,7 @@ public class SplitExpenseService {
             .collect(Collectors.toList());
     }
 
-    public void deleteSplitExpense(Long expenseId, Long userId) {
+    public void deleteSplitExpense(Long expenseId, String userId) {
         Optional<SplitExpense> expenseOpt = getSplitExpenseById(expenseId, userId);
         if (expenseOpt.isEmpty()) {
             throw new RuntimeException("Split expense not found or access denied");
@@ -228,8 +228,8 @@ public class SplitExpenseService {
         splitExpenseRepository.deleteById(expenseId);
     }
 
-    public SplitParticipant updateParticipantSettlement(Long expenseId, Long participantUserId,
-                                                       boolean isSettled, Long updatedByUserId) {
+    public SplitParticipant updateParticipantSettlement(Long expenseId, String participantUserId,
+                                                       boolean isSettled, String updatedByUserId) {
         // Verify access to expense
         if (getSplitExpenseById(expenseId, updatedByUserId).isEmpty()) {
             throw new RuntimeException("Split expense not found or access denied");

@@ -31,7 +31,7 @@ public class PdfExportController {
                                              @RequestParam(defaultValue = "false") boolean download,
                                              HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -72,7 +72,7 @@ public class PdfExportController {
     public ResponseEntity<?> exportIndividualReport(@RequestParam(defaultValue = "false") boolean download,
                                                    HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -108,11 +108,11 @@ public class PdfExportController {
      * Export friend expense report as PDF
      */
     @GetMapping("/friends/{friendId}/pdf")
-    public ResponseEntity<?> exportFriendReport(@PathVariable Long friendId,
+    public ResponseEntity<?> exportFriendReport(@PathVariable String friendId,
                                               @RequestParam(defaultValue = "false") boolean download,
                                               HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -150,7 +150,7 @@ public class PdfExportController {
     @GetMapping("/formats")
     public ResponseEntity<ApiResponse<ExportFormatsResponse>> getExportFormats(HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));

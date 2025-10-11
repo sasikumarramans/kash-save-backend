@@ -78,9 +78,9 @@ public class JwtTokenService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    public Long extractUserId(String token) {
+    public String extractUserId(String token) {
         Claims claims = extractAllClaims(token);
-        return claims.get("userId", Long.class);
+        return claims.get("userId", String.class);
     }
 
     public String extractPhoneNumber(String token) {

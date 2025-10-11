@@ -29,7 +29,7 @@ public class EntryController {
     public ResponseEntity<ApiResponse<EntryResponse>> createEntry(@Valid @RequestBody CreateEntryRequest request,
                                                                  HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -70,7 +70,7 @@ public class EntryController {
                                                                  @Valid @RequestBody UpdateEntryRequest request,
                                                                  HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -110,7 +110,7 @@ public class EntryController {
     public ResponseEntity<ApiResponse<String>> deleteEntry(@PathVariable Long entryId,
                                                           HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -129,7 +129,7 @@ public class EntryController {
     public ResponseEntity<ApiResponse<EntryResponse>> getEntry(@PathVariable Long entryId,
                                                               HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -169,7 +169,7 @@ public class EntryController {
             @RequestParam(defaultValue = "20") int size,
             HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));

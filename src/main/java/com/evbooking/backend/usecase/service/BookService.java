@@ -26,12 +26,12 @@ public class BookService {
         this.bookDomainService = bookDomainService;
     }
 
-    public Book createBook(String name, String description, String currency, Long userId) {
+    public Book createBook(String name, String description, String currency, String userId) {
         Book book = bookDomainService.createBook(name, description, currency, userId);
         return bookRepository.save(book);
     }
 
-    public List<Book> getBooksByUserId(Long userId) {
+    public List<Book> getBooksByUserId(String userId) {
         if (userId == null) {
             throw new RuntimeException("User ID is required");
         }
@@ -47,7 +47,7 @@ public class BookService {
         return bookRepository.findById(bookId);
     }
 
-    public void deleteBook(Long bookId, Long userId) {
+    public void deleteBook(Long bookId, String userId) {
         if (bookId == null) {
             throw new RuntimeException("Book ID is required");
         }
@@ -69,7 +69,7 @@ public class BookService {
         bookRepository.deleteById(bookId);
     }
 
-    public Page<Book> getBooksByUserId(Long userId, Pageable pageable) {
+    public Page<Book> getBooksByUserId(String userId, Pageable pageable) {
         if (userId == null) {
             throw new RuntimeException("User ID is required");
         }
@@ -77,12 +77,12 @@ public class BookService {
         return bookRepository.findByUserId(userId, pageable);
     }
 
-    public boolean verifyBookOwnership(Long bookId, Long userId) {
+    public boolean verifyBookOwnership(Long bookId, String userId) {
         Optional<Book> book = bookRepository.findById(bookId);
         return book.isPresent() && book.get().getUserId().equals(userId);
     }
 
-    public BookSummary getBookSummary(Long bookId, Long userId) {
+    public BookSummary getBookSummary(Long bookId, String userId) {
         if (!verifyBookOwnership(bookId, userId)) {
             throw new RuntimeException("You can only view summaries for your own books");
         }

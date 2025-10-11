@@ -6,14 +6,14 @@ public class Group {
     private Long id;
     private String name;
     private String description;
-    private Long adminUserId;
+    private String adminUserId;
     private String currency;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public Group() {}
 
-    public Group(String name, String description, Long adminUserId, String currency) {
+    public Group(String name, String description, String adminUserId, String currency) {
         this.name = name;
         this.description = description;
         this.adminUserId = adminUserId;
@@ -37,8 +37,8 @@ public class Group {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public Long getAdminUserId() { return adminUserId; }
-    public void setAdminUserId(Long adminUserId) {
+    public String getAdminUserId() { return adminUserId; }
+    public void setAdminUserId(String adminUserId) {
         this.adminUserId = adminUserId;
         this.updatedAt = LocalDateTime.now();
     }

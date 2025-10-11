@@ -10,7 +10,7 @@ public class GroupResponse {
     private String name;
     private String description;
     private String currency;
-    private Long adminUserId;
+    private String adminUserId;
     private String adminUsername;
     private int memberCount;
     private List<GroupMemberResponse> members;
@@ -21,7 +21,7 @@ public class GroupResponse {
     public GroupResponse() {}
 
     public GroupResponse(Long id, String name, String description, String currency,
-                        Long adminUserId, String adminUsername, int memberCount,
+                        String adminUserId, String adminUsername, int memberCount,
                         List<GroupMemberResponse> members, LocalDateTime createdAt) {
         this.id = id;
         this.name = name;
@@ -46,8 +46,8 @@ public class GroupResponse {
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) { this.currency = currency; }
 
-    public Long getAdminUserId() { return adminUserId; }
-    public void setAdminUserId(Long adminUserId) { this.adminUserId = adminUserId; }
+    public String getAdminUserId() { return adminUserId; }
+    public void setAdminUserId(String adminUserId) { this.adminUserId = adminUserId; }
 
     public String getAdminUsername() { return adminUsername; }
     public void setAdminUsername(String adminUsername) { this.adminUsername = adminUsername; }

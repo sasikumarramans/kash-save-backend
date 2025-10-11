@@ -39,7 +39,7 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
            "JOIN BookEntity b ON e.bookId = b.id " +
            "WHERE b.userId = :userId AND e.type = :type AND e.dateTime BETWEEN :startDate AND :endDate")
     BigDecimal getTotalAmountByUserIdAndTypeAndDateRange(
-        @Param("userId") Long userId,
+        @Param("userId") String userId,
         @Param("type") EntryType type,
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate);
@@ -49,7 +49,7 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
            "WHERE b.userId = :userId AND e.dateTime BETWEEN :startDate AND :endDate " +
            "ORDER BY e.dateTime DESC")
     List<EntryEntity> findByUserIdAndDateTimeBetweenOrderByDateTimeDesc(
-        @Param("userId") Long userId,
+        @Param("userId") String userId,
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate);
 
@@ -58,6 +58,6 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
            "JOIN BookEntity b ON e.bookId = b.id " +
            "WHERE b.userId = :userId AND e.type = :type")
     BigDecimal getTotalAmountByUserIdAndType(
-        @Param("userId") Long userId,
+        @Param("userId") String userId,
         @Param("type") EntryType type);
 }

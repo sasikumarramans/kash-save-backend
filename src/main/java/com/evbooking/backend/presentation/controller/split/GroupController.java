@@ -36,7 +36,7 @@ public class GroupController {
     public ResponseEntity<ApiResponse<GroupResponse>> createGroup(@Valid @RequestBody CreateGroupRequest request,
                                                                  HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -67,7 +67,7 @@ public class GroupController {
             @RequestParam(defaultValue = "desc") String sortDir,
             HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -92,7 +92,7 @@ public class GroupController {
     public ResponseEntity<ApiResponse<GroupResponse>> getGroup(@PathVariable Long groupId,
                                                               HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -116,7 +116,7 @@ public class GroupController {
     public ResponseEntity<ApiResponse<List<GroupMemberResponse>>> getGroupMembers(@PathVariable Long groupId,
                                                                                  HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -140,7 +140,7 @@ public class GroupController {
                                                                      @RequestBody AddMemberRequest request,
                                                                      HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -159,10 +159,10 @@ public class GroupController {
 
     @DeleteMapping("/{groupId}/members/{memberUserId}")
     public ResponseEntity<ApiResponse<String>> removeMember(@PathVariable Long groupId,
-                                                           @PathVariable Long memberUserId,
+                                                           @PathVariable String memberUserId,
                                                            HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -181,7 +181,7 @@ public class GroupController {
     public ResponseEntity<ApiResponse<String>> leaveGroup(@PathVariable Long groupId,
                                                          HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -200,7 +200,7 @@ public class GroupController {
     public ResponseEntity<ApiResponse<String>> deleteGroup(@PathVariable Long groupId,
                                                           HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -217,10 +217,10 @@ public class GroupController {
 
     @PutMapping("/{groupId}/admin/{memberUserId}")
     public ResponseEntity<ApiResponse<GroupMemberResponse>> makeAdmin(@PathVariable Long groupId,
-                                                                     @PathVariable Long memberUserId,
+                                                                     @PathVariable String memberUserId,
                                                                      HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -242,7 +242,7 @@ public class GroupController {
                                                                  @RequestBody UpdateGroupRequest request,
                                                                  HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class BookDomainService {
 
-    public void validateBookCreation(String name, Long userId) {
+    public void validateBookCreation(String name, String userId) {
         if (name == null || name.trim().isEmpty()) {
             throw new RuntimeException("Book name is required");
         }
@@ -16,18 +16,18 @@ public class BookDomainService {
         }
     }
 
-    public void validateBookOwnership(Book book, Long userId) {
+    public void validateBookOwnership(Book book, String userId) {
         if (!book.getUserId().equals(userId)) {
             throw new RuntimeException("You can only access your own books");
         }
     }
 
-    public Book createBook(String name, String description, String currency, Long userId) {
+    public Book createBook(String name, String description, String currency, String userId) {
         validateBookCreation(name, userId);
         return new Book(name.trim(), description, currency, userId);
     }
 
-    public Book createBook(String name, Long userId) {
+    public Book createBook(String name, String userId) {
         return createBook(name, null, null, userId);
     }
 }

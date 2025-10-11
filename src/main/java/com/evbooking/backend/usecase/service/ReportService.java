@@ -17,7 +17,7 @@ public class ReportService {
         this.bookService = bookService;
     }
 
-    public OverallReport getOverallReport(Long bookId, Long userId) {
+    public OverallReport getOverallReport(Long bookId, String userId) {
         if (bookId == null) {
             throw new RuntimeException("Book ID is required");
         }
@@ -37,7 +37,7 @@ public class ReportService {
         return new OverallReport(totalExpense, totalIncome, balance);
     }
 
-    public DateRangeReport getDateRangeReport(Long bookId, LocalDateTime startDate, LocalDateTime endDate, Long userId) {
+    public DateRangeReport getDateRangeReport(Long bookId, LocalDateTime startDate, LocalDateTime endDate, String userId) {
         if (bookId == null) {
             throw new RuntimeException("Book ID is required");
         }
@@ -69,7 +69,7 @@ public class ReportService {
         return new DateRangeReport(totalExpense, totalIncome, balance, startDate, endDate);
     }
 
-    public UserDateRangeReport getUserDateRangeReport(Long userId, LocalDateTime startDate, LocalDateTime endDate) {
+    public UserDateRangeReport getUserDateRangeReport(String userId, LocalDateTime startDate, LocalDateTime endDate) {
         if (userId == null) {
             throw new RuntimeException("User ID is required");
         }
@@ -93,7 +93,7 @@ public class ReportService {
         return new UserDateRangeReport(totalExpense, totalIncome, balance, startDate, endDate, userId);
     }
 
-    public UserOverallReport getUserOverallReport(Long userId) {
+    public UserOverallReport getUserOverallReport(String userId) {
         if (userId == null) {
             throw new RuntimeException("User ID is required");
         }
@@ -166,10 +166,10 @@ public class ReportService {
         private final BigDecimal balance;
         private final LocalDateTime startDate;
         private final LocalDateTime endDate;
-        private final Long userId;
+        private final String userId;
 
         public UserDateRangeReport(BigDecimal totalExpense, BigDecimal totalIncome, BigDecimal balance,
-                                  LocalDateTime startDate, LocalDateTime endDate, Long userId) {
+                                  LocalDateTime startDate, LocalDateTime endDate, String userId) {
             this.totalExpense = totalExpense;
             this.totalIncome = totalIncome;
             this.balance = balance;
@@ -183,7 +183,7 @@ public class ReportService {
         public BigDecimal getBalance() { return balance; }
         public LocalDateTime getStartDate() { return startDate; }
         public LocalDateTime getEndDate() { return endDate; }
-        public Long getUserId() { return userId; }
+        public String getUserId() { return userId; }
     }
 
     public static class UserOverallReport {
@@ -191,10 +191,10 @@ public class ReportService {
         private final BigDecimal totalIncome;
         private final BigDecimal balance;
         private final BigDecimal currentMonthSavings;
-        private final Long userId;
+        private final String userId;
 
         public UserOverallReport(BigDecimal totalExpense, BigDecimal totalIncome, BigDecimal balance,
-                                BigDecimal currentMonthSavings, Long userId) {
+                                BigDecimal currentMonthSavings, String userId) {
             this.totalExpense = totalExpense;
             this.totalIncome = totalIncome;
             this.balance = balance;
@@ -206,6 +206,6 @@ public class ReportService {
         public BigDecimal getTotalIncome() { return totalIncome; }
         public BigDecimal getBalance() { return balance; }
         public BigDecimal getCurrentMonthSavings() { return currentMonthSavings; }
-        public Long getUserId() { return userId; }
+        public String getUserId() { return userId; }
     }
 }

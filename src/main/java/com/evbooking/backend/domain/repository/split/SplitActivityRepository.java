@@ -17,40 +17,40 @@ public interface SplitActivityRepository extends JpaRepository<SplitActivityEnti
 
     // Get activities for a user (activities that affect them)
     @Query("SELECT sa FROM SplitActivityEntity sa WHERE sa.userId = :userId OR sa.relatedUserId = :userId ORDER BY sa.createdAt DESC")
-    Page<SplitActivityEntity> findActivitiesForUser(@Param("userId") Long userId, Pageable pageable);
+    Page<SplitActivityEntity> findActivitiesForUser(@Param("userId") String userId, Pageable pageable);
 
     @Query("SELECT sa FROM SplitActivityEntity sa WHERE sa.userId = :userId OR sa.relatedUserId = :userId ORDER BY sa.createdAt DESC")
-    List<SplitActivityEntity> findActivitiesForUser(@Param("userId") Long userId);
+    List<SplitActivityEntity> findActivitiesForUser(@Param("userId") String userId);
 
     // Filter by activity type
     @Query("SELECT sa FROM SplitActivityEntity sa WHERE sa.activityType = :activityType AND (sa.userId = :userId OR sa.relatedUserId = :userId) ORDER BY sa.createdAt DESC")
-    Page<SplitActivityEntity> findByActivityTypeAndUser(@Param("activityType") SplitActivityType activityType, @Param("userId") Long userId, Pageable pageable);
+    Page<SplitActivityEntity> findByActivityTypeAndUser(@Param("activityType") SplitActivityType activityType, @Param("userId") String userId, Pageable pageable);
 
     // Filter by time range
     @Query("SELECT sa FROM SplitActivityEntity sa WHERE sa.createdAt BETWEEN :startDate AND :endDate AND (sa.userId = :userId OR sa.relatedUserId = :userId) ORDER BY sa.createdAt DESC")
-    Page<SplitActivityEntity> findByCreatedAtBetweenAndUser(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("userId") Long userId, Pageable pageable);
+    Page<SplitActivityEntity> findByCreatedAtBetweenAndUser(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate, @Param("userId") String userId, Pageable pageable);
 
     // Group-specific activities
     @Query("SELECT sa FROM SplitActivityEntity sa WHERE sa.groupId = :groupId AND (sa.userId = :userId OR sa.relatedUserId = :userId) ORDER BY sa.createdAt DESC")
-    Page<SplitActivityEntity> findByGroupIdAndUser(@Param("groupId") Long groupId, @Param("userId") Long userId, Pageable pageable);
+    Page<SplitActivityEntity> findByGroupIdAndUser(@Param("groupId") Long groupId, @Param("userId") String userId, Pageable pageable);
 
     @Query("SELECT sa FROM SplitActivityEntity sa WHERE sa.groupId = :groupId")
     List<SplitActivityEntity> findByGroupId(@Param("groupId") Long groupId);
 
     // Expense-specific activities
     @Query("SELECT sa FROM SplitActivityEntity sa WHERE sa.splitExpenseId = :splitExpenseId AND (sa.userId = :userId OR sa.relatedUserId = :userId) ORDER BY sa.createdAt DESC")
-    Page<SplitActivityEntity> findBySplitExpenseIdAndUser(@Param("splitExpenseId") Long splitExpenseId, @Param("userId") Long userId, Pageable pageable);
+    Page<SplitActivityEntity> findBySplitExpenseIdAndUser(@Param("splitExpenseId") Long splitExpenseId, @Param("userId") String userId, Pageable pageable);
 
     @Query("SELECT sa FROM SplitActivityEntity sa WHERE sa.splitExpenseId = :splitExpenseId")
     List<SplitActivityEntity> findBySplitExpenseId(@Param("splitExpenseId") Long splitExpenseId);
 
     // Friend-related activities
     @Query("SELECT sa FROM SplitActivityEntity sa WHERE ((sa.userId = :userId AND sa.relatedUserId = :friendId) OR (sa.userId = :friendId AND sa.relatedUserId = :userId)) AND sa.groupId IS NULL ORDER BY sa.createdAt DESC")
-    Page<SplitActivityEntity> findFriendActivitiesForUser(@Param("userId") Long userId, @Param("friendId") Long friendId, Pageable pageable);
+    Page<SplitActivityEntity> findFriendActivitiesForUser(@Param("userId") String userId, @Param("friendId") String friendId, Pageable pageable);
 
     // Recent activity - use Pageable to limit results
     @Query("SELECT sa FROM SplitActivityEntity sa WHERE sa.userId = :userId OR sa.relatedUserId = :userId ORDER BY sa.createdAt DESC")
-    List<SplitActivityEntity> findRecentActivitiesForUser(@Param("userId") Long userId, Pageable pageable);
+    List<SplitActivityEntity> findRecentActivitiesForUser(@Param("userId") String userId, Pageable pageable);
 
     void deleteByGroupId(Long groupId);
     void deleteBySplitExpenseId(Long splitExpenseId);

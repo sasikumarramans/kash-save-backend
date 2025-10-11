@@ -55,7 +55,7 @@ public class SplitActivityService {
 
     // ===== ACTIVITY LOGGING METHODS =====
 
-    public void logGroupCreated(Long groupId, Long creatorUserId) {
+    public void logGroupCreated(Long groupId, String creatorUserId) {
         var groupEntityOpt = groupRepository.findById(groupId);
         if (groupEntityOpt.isPresent()) {
             Group group = groupMapper.toDomain(groupEntityOpt.get());
@@ -78,7 +78,7 @@ public class SplitActivityService {
         }
     }
 
-    public void logMemberAdded(Long groupId, Long addedUserId, Long adminUserId) {
+    public void logMemberAdded(Long groupId, String addedUserId, String adminUserId) {
         Map<String, Object> data = Map.of(
             "addedUserId", addedUserId,
             "adminUserId", adminUserId
@@ -96,7 +96,7 @@ public class SplitActivityService {
         splitActivityRepository.save(splitActivityMapper.toEntity(activity));
     }
 
-    public void logExpenseCreated(Long expenseId, Long creatorUserId) {
+    public void logExpenseCreated(Long expenseId, String creatorUserId) {
         var expenseEntityOpt = splitExpenseRepository.findById(expenseId);
         if (expenseEntityOpt.isPresent()) {
             SplitExpense expense = splitExpenseMapper.toDomain(expenseEntityOpt.get());
@@ -121,7 +121,7 @@ public class SplitActivityService {
         }
     }
 
-    public void logSettlementRecorded(Long fromUserId, Long toUserId, BigDecimal amount, String currency, Long expenseId) {
+    public void logSettlementRecorded(String fromUserId, String toUserId, BigDecimal amount, String currency, Long expenseId) {
         Map<String, Object> data = Map.of(
             "amount", amount,
             "currency", currency,
@@ -140,7 +140,7 @@ public class SplitActivityService {
         splitActivityRepository.save(splitActivityMapper.toEntity(activity));
     }
 
-    public void logParticipantSettled(Long expenseId, Long participantUserId, Long updatedByUserId, boolean isSettled) {
+    public void logParticipantSettled(Long expenseId, String participantUserId, String updatedByUserId, boolean isSettled) {
         Map<String, Object> data = Map.of(
             "participantUserId", participantUserId,
             "isSettled", isSettled
@@ -160,7 +160,7 @@ public class SplitActivityService {
 
     // ===== ACTIVITY RETRIEVAL METHODS =====
 
-    public Page<SplitActivityResponse> getActivitiesForUser(Long userId, String type, Pageable pageable) {
+    public Page<SplitActivityResponse> getActivitiesForUser(String userId, String type, Pageable pageable) {
         Page<SplitActivity> activities;
 
         if (type != null && !type.equals("all")) {
@@ -178,7 +178,7 @@ public class SplitActivityService {
         return activities.map(this::convertToActivityResponse);
     }
 
-    public Page<SplitActivityResponse> getGroupActivities(Long groupId, Long userId, Pageable pageable) {
+    public Page<SplitActivityResponse> getGroupActivities(Long groupId, String userId, Pageable pageable) {
         // Verify user is group member
         if (!groupMemberRepository.existsByGroupIdAndUserId(groupId, userId)) {
             throw new RuntimeException("You are not a member of this group");
@@ -188,12 +188,12 @@ public class SplitActivityService {
         return activities.map(this::convertToActivityResponse);
     }
 
-    public Page<SplitActivityResponse> getFriendActivities(Long userId, Long friendId, Pageable pageable) {
+    public Page<SplitActivityResponse> getFriendActivities(String userId, String friendId, Pageable pageable) {
         Page<SplitActivity> activities = splitActivityRepository.findFriendActivitiesForUser(userId, friendId, pageable).map(splitActivityMapper::toDomain);
         return activities.map(this::convertToActivityResponse);
     }
 
-    public List<SplitActivityResponse> getRecentActivities(Long userId, int limit) {
+    public List<SplitActivityResponse> getRecentActivities(String userId, int limit) {
         var entityPage = splitActivityRepository.findRecentActivitiesForUser(userId, org.springframework.data.domain.PageRequest.of(0, limit));
         List<SplitActivity> activities = entityPage.stream().map(splitActivityMapper::toDomain).collect(Collectors.toList());
         return activities.stream()
@@ -203,7 +203,7 @@ public class SplitActivityService {
 
     // ===== PRIVATE HELPER METHODS =====
 
-    private Page<SplitActivity> getGroupActivitiesForUser(Long userId, Pageable pageable) {
+    private Page<SplitActivity> getGroupActivitiesForUser(String userId, Pageable pageable) {
         // Get activities related to groups where user is a member
         var membershipEntities = groupMemberRepository.findByUserId(userId);
         List<GroupMember> memberships = membershipEntities.stream()
@@ -217,15 +217,15 @@ public class SplitActivityService {
         return splitActivityRepository.findActivitiesForUser(userId, pageable).map(splitActivityMapper::toDomain);
     }
 
-    private Page<SplitActivity> getExpenseActivitiesForUser(Long userId, Pageable pageable) {
+    private Page<SplitActivity> getExpenseActivitiesForUser(String userId, Pageable pageable) {
         return splitActivityRepository.findByActivityTypeAndUser(SplitActivityType.EXPENSE_CREATED, userId, pageable).map(splitActivityMapper::toDomain);
     }
 
-    private Page<SplitActivity> getPaymentActivitiesForUser(Long userId, Pageable pageable) {
+    private Page<SplitActivity> getPaymentActivitiesForUser(String userId, Pageable pageable) {
         return splitActivityRepository.findByActivityTypeAndUser(SplitActivityType.SETTLEMENT_RECORDED, userId, pageable).map(splitActivityMapper::toDomain);
     }
 
-    private Page<SplitActivity> getFriendActivitiesForUser(Long userId, Pageable pageable) {
+    private Page<SplitActivity> getFriendActivitiesForUser(String userId, Pageable pageable) {
         return splitActivityRepository.findByActivityTypeAndUser(SplitActivityType.FRIEND_ADDED, userId, pageable).map(splitActivityMapper::toDomain);
     }
 

@@ -26,11 +26,11 @@ public interface EntryRepository {
     Optional<LocalDateTime> getLatestEntryDateTimeByBookId(Long bookId);
 
     // User-wide reports (across all user's books)
-    BigDecimal getTotalExpensesByUserIdAndDateRange(Long userId, LocalDateTime startDate, LocalDateTime endDate);
-    BigDecimal getTotalIncomeByUserIdAndDateRange(Long userId, LocalDateTime startDate, LocalDateTime endDate);
-    List<Entry> findByUserIdAndDateTimeBetween(Long userId, LocalDateTime startDate, LocalDateTime endDate);
+    BigDecimal getTotalExpensesByUserIdAndDateRange(String userId, LocalDateTime startDate, LocalDateTime endDate);
+    BigDecimal getTotalIncomeByUserIdAndDateRange(String userId, LocalDateTime startDate, LocalDateTime endDate);
+    List<Entry> findByUserIdAndDateTimeBetween(String userId, LocalDateTime startDate, LocalDateTime endDate);
 
     // Overall user totals (all time)
-    BigDecimal getTotalExpensesByUserId(Long userId);
-    BigDecimal getTotalIncomeByUserId(Long userId);
+    BigDecimal getTotalExpensesByUserId(String userId);
+    BigDecimal getTotalIncomeByUserId(String userId);
 }

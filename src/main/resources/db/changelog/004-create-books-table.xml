@@ -17,7 +17,7 @@
             <column name="currency" type="VARCHAR(3)" defaultValue="INR">
                 <constraints nullable="false"/>
             </column>
-            <column name="user_id" type="BIGINT">
+            <column name="user_id" type="VARCHAR(36)">
                 <constraints nullable="false"/>
             </column>
             <column name="created_at" type="TIMESTAMP">

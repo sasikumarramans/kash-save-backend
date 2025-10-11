@@ -14,7 +14,7 @@ import java.util.List;
 public interface SettlementRepository extends JpaRepository<SettlementEntity, Long> {
 
     @Query("SELECT s FROM SettlementEntity s WHERE s.fromUserId = :userId OR s.toUserId = :userId")
-    Page<SettlementEntity> findByUserId(@Param("userId") Long userId, Pageable pageable);
+    Page<SettlementEntity> findByUserId(@Param("userId") String userId, Pageable pageable);
 
     @Query("SELECT s FROM SettlementEntity s WHERE s.fromUserId = :fromUserId")
     List<SettlementEntity> findByFromUserId(@Param("fromUserId") Long fromUserId);
@@ -23,7 +23,7 @@ public interface SettlementRepository extends JpaRepository<SettlementEntity, Lo
     List<SettlementEntity> findByToUserId(@Param("toUserId") Long toUserId);
 
     @Query("SELECT s FROM SettlementEntity s WHERE (s.fromUserId = :userId1 AND s.toUserId = :userId2) OR (s.fromUserId = :userId2 AND s.toUserId = :userId1)")
-    List<SettlementEntity> findBetweenUsers(@Param("userId1") Long userId1, @Param("userId2") Long userId2);
+    List<SettlementEntity> findBetweenUsers(@Param("userId1") String userId1, @Param("userId2") String userId2);
 
     @Query("SELECT s FROM SettlementEntity s WHERE s.splitExpenseId = :splitExpenseId")
     List<SettlementEntity> findBySplitExpenseId(@Param("splitExpenseId") Long splitExpenseId);

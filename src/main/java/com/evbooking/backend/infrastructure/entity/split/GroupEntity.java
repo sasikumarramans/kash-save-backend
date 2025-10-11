@@ -21,7 +21,7 @@ public class GroupEntity {
     private String description;
 
     @Column(name = "admin_user_id", nullable = false)
-    private Long adminUserId;
+    private String adminUserId;
 
     @Column(name = "currency", nullable = false, length = 3)
     private String currency = "INR";
@@ -36,7 +36,7 @@ public class GroupEntity {
 
     public GroupEntity() {}
 
-    public GroupEntity(String name, String description, Long adminUserId, String currency) {
+    public GroupEntity(String name, String description, String adminUserId, String currency) {
         this.name = name;
         this.description = description;
         this.adminUserId = adminUserId;
@@ -52,8 +52,8 @@ public class GroupEntity {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public Long getAdminUserId() { return adminUserId; }
-    public void setAdminUserId(Long adminUserId) { this.adminUserId = adminUserId; }
+    public String getAdminUserId() { return adminUserId; }
+    public void setAdminUserId(String adminUserId) { this.adminUserId = adminUserId; }
 
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) { this.currency = currency; }

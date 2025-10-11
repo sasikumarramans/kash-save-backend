@@ -25,7 +25,7 @@ public class EntryService {
     }
 
     public Entry createEntry(Long bookId, EntryType type, String name, BigDecimal amount,
-                           String currency, LocalDateTime dateTime, Long userId) {
+                           String currency, LocalDateTime dateTime, String userId) {
         if (bookId == null) {
             throw new RuntimeException("Book ID is required");
         }
@@ -59,7 +59,7 @@ public class EntryService {
     }
 
     public Entry updateEntry(Long entryId, EntryType type, String name, BigDecimal amount,
-                           String currency, LocalDateTime dateTime, Long userId) {
+                           String currency, LocalDateTime dateTime, String userId) {
         if (entryId == null) {
             throw new RuntimeException("Entry ID is required");
         }
@@ -98,7 +98,7 @@ public class EntryService {
         return entryRepository.save(entry);
     }
 
-    public Page<Entry> getEntriesByBookId(Long bookId, Long userId, Pageable pageable) {
+    public Page<Entry> getEntriesByBookId(Long bookId, String userId, Pageable pageable) {
         if (bookId == null) {
             throw new RuntimeException("Book ID is required");
         }
@@ -114,7 +114,7 @@ public class EntryService {
         return entryRepository.findByBookId(bookId, pageable);
     }
 
-    public Optional<Entry> getEntryById(Long entryId, Long userId) {
+    public Optional<Entry> getEntryById(Long entryId, String userId) {
         if (entryId == null) {
             throw new RuntimeException("Entry ID is required");
         }
@@ -136,7 +136,7 @@ public class EntryService {
         return entryOpt;
     }
 
-    public void deleteEntry(Long entryId, Long userId) {
+    public void deleteEntry(Long entryId, String userId) {
         if (entryId == null) {
             throw new RuntimeException("Entry ID is required");
         }
@@ -159,7 +159,7 @@ public class EntryService {
     }
 
     public List<Entry> getEntriesByBookIdAndDateRange(Long bookId, LocalDateTime startDate,
-                                                     LocalDateTime endDate, Long userId) {
+                                                     LocalDateTime endDate, String userId) {
         if (bookId == null) {
             throw new RuntimeException("Book ID is required");
         }

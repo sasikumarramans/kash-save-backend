@@ -40,7 +40,7 @@ public class SplitExpenseController {
             @Valid @RequestBody CreateSplitExpenseRequest request,
             HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -81,7 +81,7 @@ public class SplitExpenseController {
             @RequestParam(required = false) String type, // "group", "individual", or null for all
             HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -111,7 +111,7 @@ public class SplitExpenseController {
     public ResponseEntity<ApiResponse<SplitExpenseResponse>> getSplitExpense(@PathVariable Long expenseId,
                                                                            HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -136,7 +136,7 @@ public class SplitExpenseController {
             @PathVariable Long expenseId,
             HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -170,7 +170,7 @@ public class SplitExpenseController {
             @RequestParam(defaultValue = "desc") String sortDir,
             HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -195,7 +195,7 @@ public class SplitExpenseController {
     public ResponseEntity<ApiResponse<String>> deleteSplitExpense(@PathVariable Long expenseId,
                                                                  HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));
@@ -213,11 +213,11 @@ public class SplitExpenseController {
     @PutMapping("/{expenseId}/participants/{participantUserId}/settlement")
     public ResponseEntity<ApiResponse<SplitExpenseResponse.SplitParticipantResponse>> updateSettlement(
             @PathVariable Long expenseId,
-            @PathVariable Long participantUserId,
+            @PathVariable String participantUserId,
             @RequestBody SettlementUpdateRequest request,
             HttpServletRequest httpRequest) {
         try {
-            Long userId = (Long) httpRequest.getAttribute("userId");
+            String userId = (String) httpRequest.getAttribute("userId");
             if (userId == null) {
                 return ResponseEntity.badRequest()
                     .body(ApiResponse.error("User not authenticated"));

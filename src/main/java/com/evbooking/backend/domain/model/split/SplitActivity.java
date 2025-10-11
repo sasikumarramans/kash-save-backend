@@ -4,18 +4,18 @@ import java.time.LocalDateTime;
 
 public class SplitActivity {
     private Long id;
-    private Long userId; // User who performed the action
+    private String userId; // User who performed the action
     private SplitActivityType activityType;
     private String activityData; // JSON data with activity details
-    private Long relatedUserId; // User affected by the action (optional)
+    private String relatedUserId; // User affected by the action (optional)
     private Long groupId; // Related group (optional)
     private Long splitExpenseId; // Related split expense (optional)
     private LocalDateTime createdAt;
 
     public SplitActivity() {}
 
-    public SplitActivity(Long userId, SplitActivityType activityType, String activityData,
-                        Long relatedUserId, Long groupId, Long splitExpenseId) {
+    public SplitActivity(String userId, SplitActivityType activityType, String activityData,
+                        String relatedUserId, Long groupId, Long splitExpenseId) {
         this.userId = userId;
         this.activityType = activityType;
         this.activityData = activityData;
@@ -29,8 +29,8 @@ public class SplitActivity {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public SplitActivityType getActivityType() { return activityType; }
     public void setActivityType(SplitActivityType activityType) { this.activityType = activityType; }
@@ -38,8 +38,8 @@ public class SplitActivity {
     public String getActivityData() { return activityData; }
     public void setActivityData(String activityData) { this.activityData = activityData; }
 
-    public Long getRelatedUserId() { return relatedUserId; }
-    public void setRelatedUserId(Long relatedUserId) { this.relatedUserId = relatedUserId; }
+    public String getRelatedUserId() { return relatedUserId; }
+    public void setRelatedUserId(String relatedUserId) { this.relatedUserId = relatedUserId; }
 
     public Long getGroupId() { return groupId; }
     public void setGroupId(Long groupId) { this.groupId = groupId; }

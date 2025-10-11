@@ -8,8 +8,8 @@ import java.util.Optional;
 
 public interface BookRepository {
     Optional<Book> findById(Long id);
-    List<Book> findByUserId(Long userId);
-    Page<Book> findByUserId(Long userId, Pageable pageable);
+    List<Book> findByUserId(String userId);
+    Page<Book> findByUserId(String userId, Pageable pageable);
     Book save(Book book);
     void deleteById(Long id);
     boolean existsById(Long id);

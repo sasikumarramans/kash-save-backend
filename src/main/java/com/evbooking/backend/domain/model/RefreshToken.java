@@ -5,14 +5,14 @@ import java.time.LocalDateTime;
 public class RefreshToken {
     private Long id;
     private String token;
-    private Long userId;
+    private String userId;
     private LocalDateTime expiresAt;
     private LocalDateTime createdAt;
     private boolean revoked;
 
     public RefreshToken() {}
 
-    public RefreshToken(String token, Long userId, LocalDateTime expiresAt) {
+    public RefreshToken(String token, String userId, LocalDateTime expiresAt) {
         this.token = token;
         this.userId = userId;
         this.expiresAt = expiresAt;
@@ -27,8 +27,8 @@ public class RefreshToken {
     public String getToken() { return token; }
     public void setToken(String token) { this.token = token; }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public LocalDateTime getExpiresAt() { return expiresAt; }
     public void setExpiresAt(LocalDateTime expiresAt) { this.expiresAt = expiresAt; }

@@ -46,7 +46,7 @@ public class BalanceService {
         this.groupMemberMapper = groupMemberMapper;
     }
 
-    public List<FriendBalanceResponse> getFriendsBalances(Long userId, String filter) {
+    public List<FriendBalanceResponse> getFriendsBalances(String userId, String filter) {
         // Get all individual (non-group) expenses where user is involved
         var expenseEntities = splitExpenseRepository.findExpensesByParticipantUserId(userId);
         List<SplitExpense> individualExpenses = expenseEntities.stream()
@@ -55,7 +55,7 @@ public class BalanceService {
             .collect(Collectors.toList());
 
         // Calculate balances per friend
-        Map<Long, FriendBalanceData> friendBalances = new HashMap<>();
+        Map<String, FriendBalanceData> friendBalances = new HashMap<>();
 
         for (SplitExpense expense : individualExpenses) {
             var participantEntities = splitParticipantRepository.findBySplitExpenseId(expense.getId());
@@ -66,7 +66,7 @@ public class BalanceService {
             for (SplitParticipant participant : participants) {
                 if (!participant.getUserId().equals(userId)) {
                     // This is a friend
-                    Long friendId = participant.getUserId();
+                    String friendId = participant.getUserId();
                     FriendBalanceData balanceData = friendBalances.computeIfAbsent(friendId,
                         k -> new FriendBalanceData(friendId, expense.getCurrency()));
 
@@ -137,7 +137,7 @@ public class BalanceService {
         return filterFriendBalances(responses, filter);
     }
 
-    public List<GroupBalanceResponse> getGroupsBalances(Long userId, String filter) {
+    public List<GroupBalanceResponse> getGroupsBalances(String userId, String filter) {
         // Get all groups where user is a member
         var membershipEntities = groupMemberRepository.findByUserId(userId);
         List<GroupMember> memberships = membershipEntities.stream()
@@ -180,7 +180,7 @@ public class BalanceService {
         return filterGroupBalances(responses, filter);
     }
 
-    public OverallBalanceSummaryResponse getOverallBalanceSummary(Long userId) {
+    public OverallBalanceSummaryResponse getOverallBalanceSummary(String userId) {
         List<FriendBalanceResponse> friendsBalances = getFriendsBalances(userId, "all");
         List<GroupBalanceResponse> groupsBalances = getGroupsBalances(userId, "all");
 
@@ -256,13 +256,13 @@ public class BalanceService {
         );
     }
 
-    private GroupBalanceData calculateGroupBalance(Long groupId, Long userId) {
+    private GroupBalanceData calculateGroupBalance(Long groupId, String userId) {
         // Get all expenses for this group (including related individual expenses)
         var groupMemberEntities = groupMemberRepository.findByGroupId(groupId);
         List<GroupMember> groupMembers = groupMemberEntities.stream()
             .map(groupMemberMapper::toDomain)
             .collect(Collectors.toList());
-        List<Long> memberUserIds = groupMembers.stream()
+        List<String> memberUserIds = groupMembers.stream()
             .map(GroupMember::getUserId)
             .collect(Collectors.toList());
 
@@ -353,7 +353,7 @@ public class BalanceService {
 
     // Helper classes for internal calculations
     private static class FriendBalanceData {
-        private final Long friendId;
+        private final String friendId;
         private final String currency;
         private BigDecimal youOwe = BigDecimal.ZERO;
         private BigDecimal owesYou = BigDecimal.ZERO;
@@ -362,13 +362,13 @@ public class BalanceService {
         private int pendingCount = 0;
         private LocalDateTime lastActivity;
 
-        public FriendBalanceData(Long friendId, String currency) {
+        public FriendBalanceData(String friendId, String currency) {
             this.friendId = friendId;
             this.currency = currency;
         }
 
         // Getters and increment methods
-        public Long getFriendId() { return friendId; }
+        public String getFriendId() { return friendId; }
         public String getCurrency() { return currency; }
         public BigDecimal getYouOwe() { return youOwe; }
         public BigDecimal getOwesYou() { return owesYou; }

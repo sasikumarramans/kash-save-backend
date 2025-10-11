@@ -24,11 +24,11 @@ public class UserProfileService {
         this.fileUploadService = fileUploadService;
     }
 
-    public Optional<User> getUserProfile(Long userId) {
+    public Optional<User> getUserProfile(String userId) {
         return userRepository.findById(userId);
     }
 
-    public User updateUserProfile(Long userId, String firstName, String lastName,
+    public User updateUserProfile(String userId, String firstName, String lastName,
                                 String email, String username, String profileImageUrl) {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
@@ -70,7 +70,7 @@ public class UserProfileService {
         return userRepository.save(user);
     }
 
-    public User updateUserProfileWithFile(Long userId, String firstName, String lastName,
+    public User updateUserProfileWithFile(String userId, String firstName, String lastName,
                                         String email, String username, MultipartFile profileImage) throws IOException {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {

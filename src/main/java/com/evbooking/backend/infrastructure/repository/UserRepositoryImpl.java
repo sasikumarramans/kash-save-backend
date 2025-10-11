@@ -17,7 +17,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Optional<User> findById(Long id) {
+    public Optional<User> findById(String id) {
         return jpaUserRepository.findById(id).map(this::toDomain);
     }
 
@@ -44,7 +44,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void deleteById(String id) {
         jpaUserRepository.deleteById(id);
     }
 

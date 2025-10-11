@@ -30,7 +30,7 @@ public class PdfReportService {
         this.bookService = bookService;
     }
 
-    public byte[] generateBookReport(Long bookId, Long userId) throws Exception {
+    public byte[] generateBookReport(Long bookId, String userId) throws Exception {
         // Verify book ownership
         if (!bookService.verifyBookOwnership(bookId, userId)) {
             throw new RuntimeException("You can only generate reports for your own books");
@@ -57,7 +57,7 @@ public class PdfReportService {
         );
     }
 
-    public byte[] generateDateRangeReport(Long userId, LocalDateTime startDate, LocalDateTime endDate) throws Exception {
+    public byte[] generateDateRangeReport(String userId, LocalDateTime startDate, LocalDateTime endDate) throws Exception {
         if (startDate == null || endDate == null) {
             throw new RuntimeException("Start date and end date are required");
         }

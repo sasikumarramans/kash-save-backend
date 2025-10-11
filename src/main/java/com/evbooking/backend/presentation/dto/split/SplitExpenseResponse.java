@@ -13,12 +13,12 @@ public class SplitExpenseResponse {
     private BigDecimal totalAmount;
     private String currency;
     private String paidByUsername;
-    private Long paidByUserId;
+    private String paidByUserId;
     private Long groupId;
     private String groupName;
     private SplitType splitType;
     private String createdByUsername;
-    private Long createdByUserId;
+    private String createdByUserId;
     private List<SplitParticipantResponse> participants;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -41,8 +41,8 @@ public class SplitExpenseResponse {
     public String getPaidByUsername() { return paidByUsername; }
     public void setPaidByUsername(String paidByUsername) { this.paidByUsername = paidByUsername; }
 
-    public Long getPaidByUserId() { return paidByUserId; }
-    public void setPaidByUserId(Long paidByUserId) { this.paidByUserId = paidByUserId; }
+    public String getPaidByUserId() { return paidByUserId; }
+    public void setPaidByUserId(String paidByUserId) { this.paidByUserId = paidByUserId; }
 
     public Long getGroupId() { return groupId; }
     public void setGroupId(Long groupId) { this.groupId = groupId; }
@@ -56,8 +56,8 @@ public class SplitExpenseResponse {
     public String getCreatedByUsername() { return createdByUsername; }
     public void setCreatedByUsername(String createdByUsername) { this.createdByUsername = createdByUsername; }
 
-    public Long getCreatedByUserId() { return createdByUserId; }
-    public void setCreatedByUserId(Long createdByUserId) { this.createdByUserId = createdByUserId; }
+    public String getCreatedByUserId() { return createdByUserId; }
+    public void setCreatedByUserId(String createdByUserId) { this.createdByUserId = createdByUserId; }
 
     public List<SplitParticipantResponse> getParticipants() { return participants; }
     public void setParticipants(List<SplitParticipantResponse> participants) { this.participants = participants; }
@@ -66,7 +66,7 @@ public class SplitExpenseResponse {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     public static class SplitParticipantResponse {
-        private Long userId;
+        private String userId;
         private String username;
         private BigDecimal amountOwed;
         private BigDecimal splitValue;
@@ -77,8 +77,8 @@ public class SplitExpenseResponse {
 
         public SplitParticipantResponse() {}
 
-        public Long getUserId() { return userId; }
-        public void setUserId(Long userId) { this.userId = userId; }
+        public String getUserId() { return userId; }
+        public void setUserId(String userId) { this.userId = userId; }
 
         public String getUsername() { return username; }
         public void setUsername(String username) { this.username = username; }

@@ -14,7 +14,7 @@ public class SplitActivityEntity {
     private Long id;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private String userId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "activity_type", nullable = false)
@@ -24,7 +24,7 @@ public class SplitActivityEntity {
     private String activityData;
 
     @Column(name = "related_user_id")
-    private Long relatedUserId;
+    private String relatedUserId;
 
     @Column(name = "group_id")
     private Long groupId;
@@ -47,8 +47,8 @@ public class SplitActivityEntity {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public SplitActivityType getActivityType() { return activityType; }
     public void setActivityType(SplitActivityType activityType) { this.activityType = activityType; }
@@ -56,8 +56,8 @@ public class SplitActivityEntity {
     public String getActivityData() { return activityData; }
     public void setActivityData(String activityData) { this.activityData = activityData; }
 
-    public Long getRelatedUserId() { return relatedUserId; }
-    public void setRelatedUserId(Long relatedUserId) { this.relatedUserId = relatedUserId; }
+    public String getRelatedUserId() { return relatedUserId; }
+    public void setRelatedUserId(String relatedUserId) { this.relatedUserId = relatedUserId; }
 
     public Long getGroupId() { return groupId; }
     public void setGroupId(Long groupId) { this.groupId = groupId; }

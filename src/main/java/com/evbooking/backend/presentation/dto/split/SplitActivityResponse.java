@@ -55,20 +55,20 @@ public class SplitActivityResponse {
 
     // Nested classes for structured activity data
     public static class ActivityActor {
-        private Long userId;
+        private String userId;
         private String username;
         private String name;
 
         public ActivityActor() {}
 
-        public ActivityActor(Long userId, String username, String name) {
+        public ActivityActor(String userId, String username, String name) {
             this.userId = userId;
             this.username = username;
             this.name = name;
         }
 
-        public Long getUserId() { return userId; }
-        public void setUserId(Long userId) { this.userId = userId; }
+        public String getUserId() { return userId; }
+        public void setUserId(String userId) { this.userId = userId; }
 
         public String getUsername() { return username; }
         public void setUsername(String username) { this.username = username; }
@@ -78,20 +78,20 @@ public class SplitActivityResponse {
     }
 
     public static class ActivityTarget {
-        private Long userId;
+        private String userId;
         private String username;
         private String name;
 
         public ActivityTarget() {}
 
-        public ActivityTarget(Long userId, String username, String name) {
+        public ActivityTarget(String userId, String username, String name) {
             this.userId = userId;
             this.username = username;
             this.name = name;
         }
 
-        public Long getUserId() { return userId; }
-        public void setUserId(Long userId) { this.userId = userId; }
+        public String getUserId() { return userId; }
+        public void setUserId(String userId) { this.userId = userId; }
 
         public String getUsername() { return username; }
         public void setUsername(String username) { this.username = username; }

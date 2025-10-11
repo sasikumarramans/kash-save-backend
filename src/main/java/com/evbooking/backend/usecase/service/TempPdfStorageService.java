@@ -13,7 +13,7 @@ public class TempPdfStorageService {
 
     private final Map<String, TempPdfData> tempStorage = new ConcurrentHashMap<>();
 
-    public TempPdfInfo storePdf(byte[] pdfBytes, String fileName, Long userId) {
+    public TempPdfInfo storePdf(byte[] pdfBytes, String fileName, String userId) {
         String token = generateToken();
         LocalDateTime expiresAt = LocalDateTime.now().plusHours(1); // 1 hour expiration
 
@@ -26,7 +26,7 @@ public class TempPdfStorageService {
         return new TempPdfInfo(token, fileName, expiresAt);
     }
 
-    public TempPdfData retrievePdf(String token, Long userId) {
+    public TempPdfData retrievePdf(String token, String userId) {
         TempPdfData pdfData = tempStorage.get(token);
 
         if (pdfData == null) {
@@ -78,10 +78,10 @@ public class TempPdfStorageService {
     public static class TempPdfData {
         private final byte[] pdfBytes;
         private final String fileName;
-        private final Long userId;
+        private final String userId;
         private final LocalDateTime expiresAt;
 
-        public TempPdfData(byte[] pdfBytes, String fileName, Long userId, LocalDateTime expiresAt) {
+        public TempPdfData(byte[] pdfBytes, String fileName, String userId, LocalDateTime expiresAt) {
             this.pdfBytes = pdfBytes;
             this.fileName = fileName;
             this.userId = userId;
@@ -90,7 +90,7 @@ public class TempPdfStorageService {
 
         public byte[] getPdfBytes() { return pdfBytes; }
         public String getFileName() { return fileName; }
-        public Long getUserId() { return userId; }
+        public String getUserId() { return userId; }
         public LocalDateTime getExpiresAt() { return expiresAt; }
     }
 }

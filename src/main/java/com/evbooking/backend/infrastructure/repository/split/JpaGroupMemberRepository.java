@@ -14,17 +14,17 @@ public interface JpaGroupMemberRepository extends JpaRepository<GroupMemberEntit
 
     List<GroupMemberEntity> findByGroupId(Long groupId);
 
-    List<GroupMemberEntity> findByUserId(Long userId);
+    List<GroupMemberEntity> findByUserId(String userId);
 
     @Query("SELECT gm FROM GroupMemberEntity gm WHERE gm.groupId = :groupId AND gm.userId = :userId")
-    Optional<GroupMemberEntity> findByGroupIdAndUserId(@Param("groupId") Long groupId, @Param("userId") Long userId);
+    Optional<GroupMemberEntity> findByGroupIdAndUserId(@Param("groupId") Long groupId, @Param("userId") String userId);
 
     List<GroupMemberEntity> findByGroupIdAndIsAdminTrue(Long groupId);
 
-    void deleteByGroupIdAndUserId(Long groupId, Long userId);
+    void deleteByGroupIdAndUserId(Long groupId, String userId);
 
     void deleteByGroupId(Long groupId);
 
     @Query("SELECT gm.userId FROM GroupMemberEntity gm WHERE gm.groupId = :groupId")
-    List<Long> findUserIdsByGroupId(@Param("groupId") Long groupId);
+    List<String> findUserIdsByGroupId(@Param("groupId") Long groupId);
 }

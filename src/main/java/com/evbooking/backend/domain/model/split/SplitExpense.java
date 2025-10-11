@@ -8,17 +8,17 @@ public class SplitExpense {
     private String description;
     private BigDecimal totalAmount;
     private String currency;
-    private Long paidByUserId;
+    private String paidByUserId;
     private Long groupId;
     private SplitType splitType;
-    private Long createdByUserId;
+    private String createdByUserId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     public SplitExpense() {}
 
     public SplitExpense(String description, BigDecimal totalAmount, String currency,
-                       Long paidByUserId, Long groupId, SplitType splitType, Long createdByUserId) {
+                       String paidByUserId, Long groupId, SplitType splitType, String createdByUserId) {
         this.description = description;
         this.totalAmount = totalAmount;
         this.currency = currency != null ? currency : "INR";
@@ -51,8 +51,8 @@ public class SplitExpense {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public Long getPaidByUserId() { return paidByUserId; }
-    public void setPaidByUserId(Long paidByUserId) {
+    public String getPaidByUserId() { return paidByUserId; }
+    public void setPaidByUserId(String paidByUserId) {
         this.paidByUserId = paidByUserId;
         this.updatedAt = LocalDateTime.now();
     }
@@ -66,8 +66,8 @@ public class SplitExpense {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public Long getCreatedByUserId() { return createdByUserId; }
-    public void setCreatedByUserId(Long createdByUserId) { this.createdByUserId = createdByUserId; }
+    public String getCreatedByUserId() { return createdByUserId; }
+    public void setCreatedByUserId(String createdByUserId) { this.createdByUserId = createdByUserId; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

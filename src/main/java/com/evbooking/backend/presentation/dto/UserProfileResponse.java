@@ -3,7 +3,7 @@ package com.evbooking.backend.presentation.dto;
 import java.time.LocalDateTime;
 
 public class UserProfileResponse {
-    private Long id;
+    private String id;
     private String email;
     private String firstName;
     private String lastName;
@@ -16,7 +16,7 @@ public class UserProfileResponse {
 
     public UserProfileResponse() {}
 
-    public UserProfileResponse(Long id, String email, String firstName, String lastName,
+    public UserProfileResponse(String id, String email, String firstName, String lastName,
                              String phoneNumber, String username, String profileImageUrl,
                              String role, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
@@ -31,8 +31,8 @@ public class UserProfileResponse {
         this.updatedAt = updatedAt;
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }

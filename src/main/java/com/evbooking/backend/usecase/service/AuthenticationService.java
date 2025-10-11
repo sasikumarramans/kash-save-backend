@@ -143,7 +143,7 @@ public class AuthenticationService {
         }
     }
 
-    public void logoutAllDevices(Long userId) {
+    public void logoutAllDevices(String userId) {
         refreshTokenRepository.deleteByUserId(userId);
     }
 
@@ -197,7 +197,7 @@ public class AuthenticationService {
         return userRepository.save(newUser);
     }
 
-    private void saveRefreshToken(String token, Long userId) {
+    private void saveRefreshToken(String token, String userId) {
         // Delete existing refresh tokens for user (single device login)
         refreshTokenRepository.deleteByUserId(userId);
 

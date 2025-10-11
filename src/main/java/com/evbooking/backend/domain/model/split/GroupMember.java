@@ -5,13 +5,13 @@ import java.time.LocalDateTime;
 public class GroupMember {
     private Long id;
     private Long groupId;
-    private Long userId;
+    private String userId;
     private boolean isAdmin;
     private LocalDateTime joinedAt;
 
     public GroupMember() {}
 
-    public GroupMember(Long groupId, Long userId, boolean isAdmin) {
+    public GroupMember(Long groupId, String userId, boolean isAdmin) {
         this.groupId = groupId;
         this.userId = userId;
         this.isAdmin = isAdmin;
@@ -24,8 +24,8 @@ public class GroupMember {
     public Long getGroupId() { return groupId; }
     public void setGroupId(Long groupId) { this.groupId = groupId; }
 
-    public Long getUserId() { return userId; }
-    public void setUserId(Long userId) { this.userId = userId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public boolean isAdmin() { return isAdmin; }
     public void setAdmin(boolean admin) { isAdmin = admin; }

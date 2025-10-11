@@ -14,12 +14,12 @@ public interface JpaSplitParticipantRepository extends JpaRepository<SplitPartic
 
     List<SplitParticipantEntity> findBySplitExpenseId(Long splitExpenseId);
 
-    List<SplitParticipantEntity> findByUserId(Long userId);
+    List<SplitParticipantEntity> findByUserId(String userId);
 
     @Query("SELECT sp FROM SplitParticipantEntity sp WHERE sp.splitExpenseId = :expenseId AND sp.userId = :userId")
-    Optional<SplitParticipantEntity> findBySplitExpenseIdAndUserId(@Param("expenseId") Long expenseId, @Param("userId") Long userId);
+    Optional<SplitParticipantEntity> findBySplitExpenseIdAndUserId(@Param("expenseId") String userId);
 
-    List<SplitParticipantEntity> findByUserIdAndIsSettledFalse(Long userId);
+    List<SplitParticipantEntity> findByUserIdAndIsSettledFalse(String userId);
 
     @Query("SELECT sp FROM SplitParticipantEntity sp WHERE sp.splitExpenseId IN (SELECT se.id FROM SplitExpenseEntity se WHERE se.groupId = :groupId)")
     List<SplitParticipantEntity> findByGroupId(@Param("groupId") Long groupId);

@@ -1,7 +1,7 @@
 package com.evbooking.backend.presentation.dto;
 
 public class AuthenticationResponse {
-    private Long userId;
+    private String userId;
     private String phoneNumber;
     private String email;
     private String firstName;
@@ -14,7 +14,7 @@ public class AuthenticationResponse {
 
     public AuthenticationResponse() {}
 
-    public AuthenticationResponse(Long userId, String phoneNumber, String email,
+    public AuthenticationResponse(String userId, String phoneNumber, String email,
                                  String firstName, String lastName, String username,
                                  String profileImageUrl, String role,
                                  String accessToken, String refreshToken) {
@@ -30,11 +30,11 @@ public class AuthenticationResponse {
         this.refreshToken = refreshToken;
     }
 
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 

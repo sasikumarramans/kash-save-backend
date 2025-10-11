@@ -10,6 +10,6 @@ import java.util.List;
 
 @Repository
 public interface JpaBookRepository extends JpaRepository<BookEntity, Long> {
-    List<BookEntity> findByUserIdOrderByCreatedAtDesc(Long userId);
-    Page<BookEntity> findByUserIdOrderByCreatedAtDesc(Long userId, Pageable pageable);
+    List<BookEntity> findByUserIdOrderByCreatedAtDesc(String userId);
+    Page<BookEntity> findByUserIdOrderByCreatedAtDesc(String userId, Pageable pageable);
 }

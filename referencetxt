@@ -12,3 +12,16 @@ Bash(/opt/homebrew/opt/postgresql@15/bin/createuser -s kash_user 2>&1 || echo "U
 ⏺ Bash(./gradlew bootRun --no-daemon 2>&1 | tee app.log &                                          timeout: 1m 0s
       sleep 15 && tail -100 app.log | grep -E "(Started|JWT|ERROR|Exception)" || tail -50 app.log)
   ⎿  Error: Command timed out after 1m 0s
+
+force restart
+ # Pull the latest image
+  docker compose -f docker-compose.staging.yml pull app
+
+  # Recreate the container with new environment variables
+  docker compose -f docker-compose.staging.yml up -d --force-recreate app
+
+  # Check the logs
+  docker logs kash-save-staging-app -f | grep "JWT Secret Key"
+
+  docker restart kash-save-staging-app
+
