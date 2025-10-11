@@ -25,3 +25,5 @@ force restart
 
   docker restart kash-save-staging-app
 
+  docker logs kash-save-staging-app --tail 100
+

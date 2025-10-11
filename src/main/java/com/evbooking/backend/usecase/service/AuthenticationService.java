@@ -3,10 +3,12 @@ package com.evbooking.backend.usecase.service;
 import com.evbooking.backend.domain.model.*;
 import com.evbooking.backend.domain.repository.*;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class AuthenticationService {
 
     private final UserRepository userRepository;
