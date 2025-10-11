@@ -82,7 +82,9 @@ public class UserRepositoryImpl implements UserRepository {
 
     private UserEntity toEntity(User user) {
         UserEntity entity = new UserEntity();
-        entity.setId(user.getId());
+        if (user.getId() != null) {
+            entity.setId(user.getId());
+        }
         entity.setEmail(user.getEmail());
         entity.setPassword(user.getPassword());
         entity.setFirstName(user.getFirstName());
