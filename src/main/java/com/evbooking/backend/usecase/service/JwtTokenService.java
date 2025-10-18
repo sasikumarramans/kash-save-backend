@@ -147,10 +147,18 @@ public class JwtTokenService {
 
     public Boolean validateToken(String token) {
         try {
+            logger.debug("Validating token...");
             extractAllClaims(token);
-            return !isTokenExpired(token);
+            boolean expired = isTokenExpired(token);
+            logger.debug("Token expired: {}", expired);
+            if (expired) {
+                logger.warn("Token validation failed: Token is expired");
+            } else {
+                logger.debug("Token validation successful");
+            }
+            return !expired;
         } catch (Exception e) {
-            logger.debug("Token validation failed: {}", e.getMessage());
+            logger.error("Token validation failed with exception: {} - {}", e.getClass().getSimpleName(), e.getMessage());
             return false;
         }
     }
