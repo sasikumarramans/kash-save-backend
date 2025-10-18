@@ -82,6 +82,10 @@ management:
         enabled: true
 
 app:
+  base-url: ${BASE_URL:https://dev.kashsave.com}
+  upload:
+    dir: ${UPLOAD_DIR:/app/uploads}
+    max-file-size: ${MAX_UPLOAD_FILE_SIZE:5MB}
   cors:
     allowed-origins: https://dev.kashsave.com,http://dev.kashsave.com
   file-upload:
