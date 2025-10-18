@@ -59,31 +59,46 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // Get JWT token from request
             String jwt = getJwtFromRequest(request);
 
-            if (jwt != null && jwtTokenService.validateToken(jwt)) {
-                // Extract user information from JWT
-                String phoneNumber = jwtTokenService.extractPhoneNumber(jwt);
-                String userId = jwtTokenService.extractUserId(jwt);
-                String role = jwtTokenService.extractRole(jwt);
+            if (jwt != null) {
+                logger.debug("JWT token found for path: {}", requestPath);
+                logger.debug("JWT token (first 20 chars): {}...", jwt.substring(0, Math.min(20, jwt.length())));
 
-                if (phoneNumber != null && userId != null) {
-                    // Create authentication object
-                    List<SimpleGrantedAuthority> authorities = Collections.singletonList(
-                        new SimpleGrantedAuthority("ROLE_" + role)
-                    );
+                boolean isValid = jwtTokenService.validateToken(jwt);
+                logger.debug("JWT token validation result: {}", isValid);
 
-                    UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(phoneNumber, null, authorities);
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                if (isValid) {
+                    // Extract user information from JWT
+                    String phoneNumber = jwtTokenService.extractPhoneNumber(jwt);
+                    String userId = jwtTokenService.extractUserId(jwt);
+                    String role = jwtTokenService.extractRole(jwt);
 
-                    // Set user ID in request attribute for easy access in controllers
-                    request.setAttribute("userId", userId);
-                    request.setAttribute("userRole", role);
+                    logger.debug("Extracted - userId: {}, phoneNumber: {}, role: {}", userId, phoneNumber, role);
 
-                    // Set authentication in security context
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    if (phoneNumber != null && userId != null) {
+                        // Create authentication object
+                        List<SimpleGrantedAuthority> authorities = Collections.singletonList(
+                            new SimpleGrantedAuthority("ROLE_" + role)
+                        );
+
+                        UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(phoneNumber, null, authorities);
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                        // Set user ID in request attribute for easy access in controllers
+                        request.setAttribute("userId", userId);
+                        request.setAttribute("userRole", role);
+
+                        // Set authentication in security context
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                        logger.debug("Authentication set successfully for userId: {}", userId);
+                    } else {
+                        logger.warn("Failed to set authentication - phoneNumber: {}, userId: {}", phoneNumber, userId);
+                    }
+                } else {
+                    logger.warn("JWT token validation FAILED for path: {}", requestPath);
                 }
             } else {
-                logger.debug("JWT token is null, empty, or invalid for request: {}", requestPath);
+                logger.debug("No JWT token found in Authorization header for path: {}", requestPath);
             }
 
         } catch (Exception ex) {

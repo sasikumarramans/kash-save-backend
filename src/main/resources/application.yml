@@ -37,7 +37,7 @@ spring:
   security:
     jwt:
       secret-key: ${JWT_SECRET_KEY:mSpTPXWTxLv92SNuGIogCTNt2p/wU+9H3K3yv09yZt8=}
-      expiration: ${JWT_EXPIRATION:86400000}
+      expiration: ${JWT_EXPIRATION:31536000000}
 
   cache:
     type: caffeine
