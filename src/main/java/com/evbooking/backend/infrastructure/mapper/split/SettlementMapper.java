@@ -18,6 +18,7 @@ public class SettlementMapper {
                 entity.getAmount(),
                 entity.getCurrency(),
                 entity.getSplitExpenseId(),
+                entity.getGroupId(),
                 entity.getNotes(),
                 entity.getRecordedByUserId()
         );
@@ -39,6 +40,7 @@ public class SettlementMapper {
                 domain.getAmount(),
                 domain.getCurrency(),
                 domain.getSplitExpenseId(),
+                domain.getGroupId(),
                 domain.getNotes(),
                 domain.getRecordedByUserId()
         );

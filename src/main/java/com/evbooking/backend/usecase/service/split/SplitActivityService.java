@@ -158,6 +158,80 @@ public class SplitActivityService {
         splitActivityRepository.save(splitActivityMapper.toEntity(activity));
     }
 
+    public void logMemberRemoved(Long groupId, String removedUserId, String removedByUserId) {
+        Map<String, Object> data = Map.of(
+            "removedUserId", removedUserId,
+            "removedByUserId", removedByUserId
+        );
+
+        SplitActivity activity = new SplitActivity(
+            removedByUserId,
+            SplitActivityType.MEMBER_REMOVED,
+            toJson(data),
+            removedUserId,
+            groupId,
+            null
+        );
+
+        splitActivityRepository.save(splitActivityMapper.toEntity(activity));
+    }
+
+    public void logMemberLeft(Long groupId, String userId) {
+        Map<String, Object> data = Map.of(
+            "userId", userId
+        );
+
+        SplitActivity activity = new SplitActivity(
+            userId,
+            SplitActivityType.MEMBER_LEFT,
+            toJson(data),
+            null,
+            groupId,
+            null
+        );
+
+        splitActivityRepository.save(splitActivityMapper.toEntity(activity));
+    }
+
+    public void logGroupDeleted(Long groupId, String deletedByUserId, String groupName) {
+        Map<String, Object> data = Map.of(
+            "groupName", groupName,
+            "deletedByUserId", deletedByUserId
+        );
+
+        SplitActivity activity = new SplitActivity(
+            deletedByUserId,
+            SplitActivityType.GROUP_DELETED,
+            toJson(data),
+            null,
+            groupId,
+            null
+        );
+
+        splitActivityRepository.save(splitActivityMapper.toEntity(activity));
+    }
+
+    public void logStandaloneSettlement(String fromUserId, String toUserId, BigDecimal amount,
+                                       String currency, Long groupId, String notes) {
+        Map<String, Object> data = Map.of(
+            "amount", amount,
+            "currency", currency,
+            "notes", notes != null ? notes : "",
+            "groupId", groupId != null ? groupId : ""
+        );
+
+        SplitActivity activity = new SplitActivity(
+            fromUserId,
+            SplitActivityType.SETTLEMENT_RECORDED,
+            toJson(data),
+            toUserId,
+            groupId,
+            null
+        );
+
+        splitActivityRepository.save(splitActivityMapper.toEntity(activity));
+    }
+
     // ===== ACTIVITY RETRIEVAL METHODS =====
 
     public Page<SplitActivityResponse> getActivitiesForUser(String userId, String type, Pageable pageable) {
@@ -295,13 +369,14 @@ public class SplitActivityService {
 
         return switch (activity.getActivityType()) {
             case GROUP_CREATED -> actorName + " created group '" + (context.getGroupName() != null ? context.getGroupName() : "Unknown") + "'";
+            case GROUP_DELETED -> actorName + " deleted group '" + (context.getGroupName() != null ? context.getGroupName() : "Unknown") + "'";
             case MEMBER_ADDED -> actorName + " added " + targetName + " to " + (context.getGroupName() != null ? context.getGroupName() : "group");
             case MEMBER_REMOVED -> actorName + " removed " + targetName + " from " + (context.getGroupName() != null ? context.getGroupName() : "group");
             case MEMBER_LEFT -> actorName + " left " + (context.getGroupName() != null ? context.getGroupName() : "group");
             case EXPENSE_CREATED -> actorName + " added '" + (context.getExpenseDescription() != null ? context.getExpenseDescription() : "expense") +
                                    "' " + (context.getAmount() != null ? context.getCurrency() + context.getAmount() : "") +
                                    (context.getGroupName() != null ? " in " + context.getGroupName() : "");
-            case SETTLEMENT_RECORDED -> actorName + " recorded payment " +
+            case SETTLEMENT_RECORDED -> actorName + " paid " +
                                       (context.getAmount() != null ? context.getCurrency() + context.getAmount() : "") +
                                       " to " + targetName;
             case PARTICIPANT_SETTLED -> actorName + " marked " + targetName + " as settled";

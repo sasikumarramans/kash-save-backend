@@ -11,5 +11,6 @@
     <include file="db/changelog/004-create-books-table.xml"/>
     <include file="db/changelog/005-create-entries-table.xml"/>
     <include file="db/changelog/006-create-split-tables.xml"/>
+    <include file="db/changelog/007-create-group-deletion-history-table.xml"/>
 
 </databaseChangeLog>

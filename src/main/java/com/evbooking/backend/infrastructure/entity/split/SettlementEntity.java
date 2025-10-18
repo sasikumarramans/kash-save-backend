@@ -29,6 +29,9 @@ public class SettlementEntity {
     @Column(name = "split_expense_id")
     private Long splitExpenseId;
 
+    @Column(name = "group_id")
+    private Long groupId;
+
     @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
@@ -42,12 +45,13 @@ public class SettlementEntity {
     public SettlementEntity() {}
 
     public SettlementEntity(String fromUserId, String toUserId, BigDecimal amount, String currency,
-                           Long splitExpenseId, String notes, String recordedByUserId) {
+                           Long splitExpenseId, Long groupId, String notes, String recordedByUserId) {
         this.fromUserId = fromUserId;
         this.toUserId = toUserId;
         this.amount = amount;
         this.currency = currency != null ? currency : "INR";
         this.splitExpenseId = splitExpenseId;
+        this.groupId = groupId;
         this.notes = notes;
         this.recordedByUserId = recordedByUserId;
     }
@@ -69,6 +73,9 @@ public class SettlementEntity {
 
     public Long getSplitExpenseId() { return splitExpenseId; }
     public void setSplitExpenseId(Long splitExpenseId) { this.splitExpenseId = splitExpenseId; }
+
+    public Long getGroupId() { return groupId; }
+    public void setGroupId(Long groupId) { this.groupId = groupId; }
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }

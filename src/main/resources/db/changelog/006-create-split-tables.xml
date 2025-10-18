@@ -164,6 +164,7 @@
                 <constraints nullable="false"/>
             </column>
             <column name="split_expense_id" type="BIGINT"/>
+            <column name="group_id" type="BIGINT"/>
             <column name="notes" type="TEXT"/>
             <column name="settlement_date" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
                 <constraints nullable="false"/>
@@ -258,6 +259,10 @@
 
         <createIndex tableName="settlements" indexName="idx_settlements_to_user">
             <column name="to_user_id"/>
+        </createIndex>
+
+        <createIndex tableName="settlements" indexName="idx_settlements_group">
+            <column name="group_id"/>
         </createIndex>
 
         <createIndex tableName="split_activities" indexName="idx_split_activities_user">

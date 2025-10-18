@@ -23,6 +23,8 @@
                 <constraints unique="true"/>
             </column>
             <column name="profile_image_url" type="VARCHAR(500)"/>
+            <column name="address" type="VARCHAR(255)"/>
+            <column name="company_name" type="VARCHAR(100)"/>
             <column name="role" type="VARCHAR(20)">
                 <constraints nullable="false"/>
             </column>

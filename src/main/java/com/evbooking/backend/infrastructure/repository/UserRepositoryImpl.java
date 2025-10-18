@@ -73,6 +73,8 @@ public class UserRepositoryImpl implements UserRepository {
         user.setPhoneNumber(entity.getPhoneNumber());
         user.setUsername(entity.getUsername());
         user.setProfileImageUrl(entity.getProfileImageUrl());
+        user.setAddress(entity.getAddress());
+        user.setCompanyName(entity.getCompanyName());
         user.setRole(entity.getRole());
         user.setStatus(entity.getStatus());
         user.setCreatedAt(entity.getCreatedAt());
@@ -92,6 +94,8 @@ public class UserRepositoryImpl implements UserRepository {
         entity.setPhoneNumber(user.getPhoneNumber());
         entity.setUsername(user.getUsername());
         entity.setProfileImageUrl(user.getProfileImageUrl());
+        entity.setAddress(user.getAddress());
+        entity.setCompanyName(user.getCompanyName());
         entity.setRole(user.getRole());
         entity.setStatus(user.getStatus());
         entity.setCreatedAt(user.getCreatedAt());

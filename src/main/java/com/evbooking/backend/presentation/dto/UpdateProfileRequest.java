@@ -19,14 +19,23 @@ public class UpdateProfileRequest {
 
     private String profileImageUrl;
 
+    @Size(max = 255, message = "Address cannot exceed 255 characters")
+    private String address;
+
+    @Size(max = 100, message = "Company name cannot exceed 100 characters")
+    private String companyName;
+
     public UpdateProfileRequest() {}
 
-    public UpdateProfileRequest(String firstName, String lastName, String email, String username, String profileImageUrl) {
+    public UpdateProfileRequest(String firstName, String lastName, String email, String username,
+                                String profileImageUrl, String address, String companyName) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.username = username;
         this.profileImageUrl = profileImageUrl;
+        this.address = address;
+        this.companyName = companyName;
     }
 
     public String getFirstName() { return firstName; }
@@ -43,4 +52,10 @@ public class UpdateProfileRequest {
 
     public String getProfileImageUrl() { return profileImageUrl; }
     public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+
+    public String getCompanyName() { return companyName; }
+    public void setCompanyName(String companyName) { this.companyName = companyName; }
 }

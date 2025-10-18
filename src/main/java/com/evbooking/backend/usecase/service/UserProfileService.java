@@ -71,7 +71,8 @@ public class UserProfileService {
     }
 
     public User updateUserProfileWithFile(String userId, String firstName, String lastName,
-                                        String email, String username, MultipartFile profileImage) throws IOException {
+                                        String email, String username, String address,
+                                        String companyName, MultipartFile profileImage) throws IOException {
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
             throw new RuntimeException("User not found");
@@ -103,6 +104,12 @@ public class UserProfileService {
         }
         if (lastName != null) {
             user.setLastName(lastName.trim().isEmpty() ? null : lastName.trim());
+        }
+        if (address != null) {
+            user.setAddress(address.trim().isEmpty() ? null : address.trim());
+        }
+        if (companyName != null) {
+            user.setCompanyName(companyName.trim().isEmpty() ? null : companyName.trim());
         }
 
         // Handle profile image upload

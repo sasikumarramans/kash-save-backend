@@ -2,12 +2,15 @@ package com.evbooking.backend.usecase.service.split;
 
 import com.evbooking.backend.domain.model.split.Group;
 import com.evbooking.backend.domain.model.split.GroupMember;
+import com.evbooking.backend.domain.model.split.GroupDeletionHistory;
 import com.evbooking.backend.domain.model.User;
 import com.evbooking.backend.domain.repository.split.GroupRepository;
 import com.evbooking.backend.domain.repository.split.GroupMemberRepository;
+import com.evbooking.backend.domain.repository.split.GroupDeletionHistoryRepository;
 import com.evbooking.backend.domain.repository.UserRepository;
 import com.evbooking.backend.infrastructure.mapper.split.GroupMapper;
 import com.evbooking.backend.infrastructure.mapper.split.GroupMemberMapper;
+import com.evbooking.backend.infrastructure.mapper.split.GroupDeletionHistoryMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -24,18 +27,25 @@ public class GroupService {
 
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
+    private final GroupDeletionHistoryRepository groupDeletionHistoryRepository;
     private final UserRepository userRepository;
     private final SplitActivityService splitActivityService;
     private final GroupMapper groupMapper;
     private final GroupMemberMapper groupMemberMapper;
+    private final GroupDeletionHistoryMapper groupDeletionHistoryMapper;
 
-    public GroupService(GroupRepository groupRepository, GroupMemberRepository groupMemberRepository, UserRepository userRepository, SplitActivityService splitActivityService, GroupMapper groupMapper, GroupMemberMapper groupMemberMapper) {
+    public GroupService(GroupRepository groupRepository, GroupMemberRepository groupMemberRepository,
+                       GroupDeletionHistoryRepository groupDeletionHistoryRepository, UserRepository userRepository,
+                       SplitActivityService splitActivityService, GroupMapper groupMapper,
+                       GroupMemberMapper groupMemberMapper, GroupDeletionHistoryMapper groupDeletionHistoryMapper) {
         this.groupRepository = groupRepository;
         this.groupMemberRepository = groupMemberRepository;
+        this.groupDeletionHistoryRepository = groupDeletionHistoryRepository;
         this.userRepository = userRepository;
         this.splitActivityService = splitActivityService;
         this.groupMapper = groupMapper;
         this.groupMemberMapper = groupMemberMapper;
+        this.groupDeletionHistoryMapper = groupDeletionHistoryMapper;
     }
 
     public Group createGroup(String name, String description, String currency, List<String> memberUsernames, String adminUserId) {
@@ -139,14 +149,14 @@ public class GroupService {
         return savedMember;
     }
 
-    public void removeMemberFromGroup(Long groupId, String userIdToRemove, String adminUserId) {
-        // Verify admin permissions
-        var adminMemberEntityOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, adminUserId);
-        if (adminMemberEntityOpt.isEmpty() || !groupMemberMapper.toDomain(adminMemberEntityOpt.get()).isAdmin()) {
-            throw new RuntimeException("Only group admins can remove members");
+    public void removeMemberFromGroup(Long groupId, String userIdToRemove, String requestingUserId) {
+        // Verify requesting user is a member
+        var requestingMemberEntityOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, requestingUserId);
+        if (requestingMemberEntityOpt.isEmpty()) {
+            throw new RuntimeException("You are not a member of this group");
         }
 
-        // Check if member exists
+        // Check if member to remove exists
         if (!groupMemberRepository.existsByGroupIdAndUserId(groupId, userIdToRemove)) {
             throw new RuntimeException("User is not a member of this group");
         }
@@ -161,6 +171,9 @@ public class GroupService {
         }
 
         groupMemberRepository.deleteByGroupIdAndUserId(groupId, userIdToRemove);
+
+        // Log member removal activity
+        splitActivityService.logMemberRemoved(groupId, userIdToRemove, requestingUserId);
     }
 
     public void leaveGroup(Long groupId, String userId) {
@@ -189,20 +202,49 @@ public class GroupService {
         }
 
         groupMemberRepository.deleteByGroupIdAndUserId(groupId, userId);
+
+        // Log member left activity
+        splitActivityService.logMemberLeft(groupId, userId);
     }
 
-    public void deleteGroup(Long groupId, String adminUserId) {
-        // Verify admin permissions
-        var adminMemberEntityOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, adminUserId);
-        if (adminMemberEntityOpt.isEmpty() || !groupMemberMapper.toDomain(adminMemberEntityOpt.get()).isAdmin()) {
-            throw new RuntimeException("Only group admins can delete the group");
+    public void deleteGroup(Long groupId, String userId) {
+        // Verify user is a member
+        var memberEntityOpt = groupMemberRepository.findByGroupIdAndUserId(groupId, userId);
+        if (memberEntityOpt.isEmpty()) {
+            throw new RuntimeException("You are not a member of this group");
         }
 
         // Check if group exists
-        if (!groupRepository.findById(groupId).isPresent()) {
+        var groupEntityOpt = groupRepository.findById(groupId);
+        if (groupEntityOpt.isEmpty()) {
             throw new RuntimeException("Group not found");
         }
 
+        Group group = groupMapper.toDomain(groupEntityOpt.get());
+
+        // Get user who is deleting
+        Optional<User> userOpt = userRepository.findById(userId);
+        String username = userOpt.map(User::getUsername).orElse("Unknown");
+
+        // Count members before deletion
+        int memberCount = (int) groupMemberRepository.countByGroupId(groupId);
+
+        // Record deletion history
+        GroupDeletionHistory deletionHistory = new GroupDeletionHistory(
+            groupId,
+            group.getName(),
+            group.getDescription(),
+            userId,
+            username,
+            memberCount,
+            "Group deleted by member"
+        );
+        groupDeletionHistoryRepository.save(groupDeletionHistoryMapper.toEntity(deletionHistory));
+
+        // Log group deletion activity
+        splitActivityService.logGroupDeleted(groupId, userId, group.getName());
+
+        // Delete the group (cascades to members)
         groupRepository.deleteById(groupId);
     }
 

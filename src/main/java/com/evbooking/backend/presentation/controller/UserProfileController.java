@@ -48,6 +48,8 @@ public class UserProfileController {
                 user.getPhoneNumber(),
                 user.getUsername(),
                 user.getProfileImageUrl(),
+                user.getAddress(),
+                user.getCompanyName(),
                 user.getRole().name(),
                 user.getCreatedAt(),
                 user.getUpdatedAt()
@@ -67,6 +69,8 @@ public class UserProfileController {
             @RequestParam(value = "lastName", required = false) String lastName,
             @RequestParam(value = "email", required = false) String email,
             @RequestParam(value = "username", required = false) String username,
+            @RequestParam(value = "address", required = false) String address,
+            @RequestParam(value = "companyName", required = false) String companyName,
             @RequestParam(value = "profileImage", required = false) MultipartFile profileImage,
             HttpServletRequest servletRequest) {
         try {
@@ -82,6 +86,8 @@ public class UserProfileController {
                 lastName,
                 email,
                 username,
+                address,
+                companyName,
                 profileImage
             );
 
@@ -93,6 +99,8 @@ public class UserProfileController {
                 updatedUser.getPhoneNumber(),
                 updatedUser.getUsername(),
                 updatedUser.getProfileImageUrl(),
+                updatedUser.getAddress(),
+                updatedUser.getCompanyName(),
                 updatedUser.getRole().name(),
                 updatedUser.getCreatedAt(),
                 updatedUser.getUpdatedAt()

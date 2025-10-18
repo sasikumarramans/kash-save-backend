@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="007-create-group-deletion-history-table" author="kash-save-backend">
+        <createTable tableName="group_deletion_history">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="group_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="group_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="group_description" type="VARCHAR(1000)"/>
+            <column name="deleted_by_user_id" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="deleted_by_username" type="VARCHAR(50)"/>
+            <column name="deleted_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="member_count" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reason" type="VARCHAR(500)"/>
+        </createTable>
+
+        <!-- Create indexes for performance -->
+        <createIndex tableName="group_deletion_history" indexName="idx_group_deletion_group_id">
+            <column name="group_id"/>
+        </createIndex>
+
+        <createIndex tableName="group_deletion_history" indexName="idx_group_deletion_deleted_by">
+            <column name="deleted_by_user_id"/>
+        </createIndex>
+
+        <createIndex tableName="group_deletion_history" indexName="idx_group_deletion_deleted_at">
+            <column name="deleted_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

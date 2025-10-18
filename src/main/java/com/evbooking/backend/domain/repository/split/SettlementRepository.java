@@ -27,4 +27,7 @@ public interface SettlementRepository extends JpaRepository<SettlementEntity, Lo
 
     @Query("SELECT s FROM SettlementEntity s WHERE s.splitExpenseId = :splitExpenseId")
     List<SettlementEntity> findBySplitExpenseId(@Param("splitExpenseId") Long splitExpenseId);
+
+    @Query("SELECT s FROM SettlementEntity s WHERE s.groupId = :groupId ORDER BY s.settlementDate DESC")
+    List<SettlementEntity> findByGroupId(@Param("groupId") Long groupId);
 }

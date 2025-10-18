@@ -11,6 +11,8 @@ public class User {
     private String phoneNumber;
     private String username;
     private String profileImageUrl;
+    private String address;
+    private String companyName;
     private UserRole role;
     private UserStatus status;
     private LocalDateTime createdAt;
@@ -54,6 +56,12 @@ public class User {
 
     public String getProfileImageUrl() { return profileImageUrl; }
     public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+
+    public String getCompanyName() { return companyName; }
+    public void setCompanyName(String companyName) { this.companyName = companyName; }
 
     public UserRole getRole() { return role; }
     public void setRole(UserRole role) { this.role = role; }

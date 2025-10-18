@@ -8,6 +8,8 @@ public class AuthenticationResponse {
     private String lastName;
     private String username;
     private String profileImageUrl;
+    private String address;
+    private String companyName;
     private String role;
     private String accessToken;
     private String refreshToken;
@@ -16,8 +18,8 @@ public class AuthenticationResponse {
 
     public AuthenticationResponse(String userId, String phoneNumber, String email,
                                  String firstName, String lastName, String username,
-                                 String profileImageUrl, String role,
-                                 String accessToken, String refreshToken) {
+                                 String profileImageUrl, String address, String companyName,
+                                 String role, String accessToken, String refreshToken) {
         this.userId = userId;
         this.phoneNumber = phoneNumber;
         this.email = email;
@@ -25,6 +27,8 @@ public class AuthenticationResponse {
         this.lastName = lastName;
         this.username = username;
         this.profileImageUrl = profileImageUrl;
+        this.address = address;
+        this.companyName = companyName;
         this.role = role;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
@@ -84,6 +88,22 @@ public class AuthenticationResponse {
 
     public void setProfileImageUrl(String profileImageUrl) {
         this.profileImageUrl = profileImageUrl;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
     }
 
     public String getRole() {

@@ -10,6 +10,8 @@ public class UserProfileResponse {
     private String phoneNumber;
     private String username;
     private String profileImageUrl;
+    private String address;
+    private String companyName;
     private String role;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -18,6 +20,7 @@ public class UserProfileResponse {
 
     public UserProfileResponse(String id, String email, String firstName, String lastName,
                              String phoneNumber, String username, String profileImageUrl,
+                             String address, String companyName,
                              String role, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.email = email;
@@ -26,6 +29,8 @@ public class UserProfileResponse {
         this.phoneNumber = phoneNumber;
         this.username = username;
         this.profileImageUrl = profileImageUrl;
+        this.address = address;
+        this.companyName = companyName;
         this.role = role;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -51,6 +56,12 @@ public class UserProfileResponse {
 
     public String getProfileImageUrl() { return profileImageUrl; }
     public void setProfileImageUrl(String profileImageUrl) { this.profileImageUrl = profileImageUrl; }
+
+    public String getAddress() { return address; }
+    public void setAddress(String address) { this.address = address; }
+
+    public String getCompanyName() { return companyName; }
+    public void setCompanyName(String companyName) { this.companyName = companyName; }
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
