@@ -46,7 +46,7 @@ public class FileUploadService {
         String originalFilename = file.getOriginalFilename();
         String fileExtension = getFileExtension(originalFilename);
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-        String filename = String.format("user_%d_%s_%s%s",
+        String filename = String.format("user_%s_%s_%s%s",
             userId, timestamp, UUID.randomUUID().toString().substring(0, 8), fileExtension);
 
         // Save file
