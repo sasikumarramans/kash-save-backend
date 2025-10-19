@@ -22,18 +22,21 @@ public class CreateSettlementRequest {
 
     private Long groupId; // Optional - for group settlements
 
+    private String groupType; // "group" for real groups, "expense" for non-group expenses
+
     @Size(max = 500, message = "Notes cannot exceed 500 characters")
     private String notes;
 
     public CreateSettlementRequest() {}
 
     public CreateSettlementRequest(String fromUsername, String toUsername, BigDecimal amount,
-                                  String currency, Long groupId, String notes) {
+                                  String currency, Long groupId, String groupType, String notes) {
         this.fromUsername = fromUsername;
         this.toUsername = toUsername;
         this.amount = amount;
         this.currency = currency != null ? currency : "INR";
         this.groupId = groupId;
+        this.groupType = groupType;
         this.notes = notes;
     }
 
@@ -52,6 +55,9 @@ public class CreateSettlementRequest {
 
     public Long getGroupId() { return groupId; }
     public void setGroupId(Long groupId) { this.groupId = groupId; }
+
+    public String getGroupType() { return groupType; }
+    public void setGroupType(String groupType) { this.groupType = groupType; }
 
     public String getNotes() { return notes; }
     public void setNotes(String notes) { this.notes = notes; }

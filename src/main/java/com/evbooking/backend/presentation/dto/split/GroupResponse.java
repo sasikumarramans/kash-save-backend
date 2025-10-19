@@ -7,6 +7,7 @@ import java.util.List;
 
 public class GroupResponse {
     private Long id;
+    private String type; // "group" for real groups, "expense" for non-group expenses
     private String name;
     private String description;
     private String currency;
@@ -20,10 +21,11 @@ public class GroupResponse {
 
     public GroupResponse() {}
 
-    public GroupResponse(Long id, String name, String description, String currency,
+    public GroupResponse(Long id, String type, String name, String description, String currency,
                         String adminUserId, String adminUsername, int memberCount,
                         List<GroupMemberResponse> members, LocalDateTime createdAt) {
         this.id = id;
+        this.type = type;
         this.name = name;
         this.description = description;
         this.currency = currency;
@@ -36,6 +38,9 @@ public class GroupResponse {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }

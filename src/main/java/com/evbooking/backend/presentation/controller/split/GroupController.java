@@ -77,8 +77,7 @@ public class GroupController {
                 Sort.Direction.DESC : Sort.Direction.ASC, sortBy);
             Pageable pageable = PageRequest.of(page, size, sort);
 
-            Page<Group> groups = groupService.getUserGroups(userId, pageable);
-            Page<GroupResponse> response = groups.map(this::convertToGroupResponse);
+            Page<GroupResponse> response = groupService.getUserGroupsWithFriends(userId, pageable);
 
             return ResponseEntity.ok(ApiResponse.success(response));
 
@@ -270,6 +269,7 @@ public class GroupController {
 
         return new GroupResponse(
             group.getId(),
+            "group", // Type: group (real group)
             group.getName(),
             group.getDescription(),
             group.getCurrency(),

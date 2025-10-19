@@ -6,6 +6,8 @@ import com.evbooking.backend.domain.model.split.Settlement;
 import com.evbooking.backend.domain.repository.UserRepository;
 import com.evbooking.backend.domain.repository.split.GroupRepository;
 import com.evbooking.backend.domain.repository.split.SettlementRepository;
+import com.evbooking.backend.domain.repository.split.SplitExpenseRepository;
+import com.evbooking.backend.domain.repository.split.SplitParticipantRepository;
 import com.evbooking.backend.infrastructure.mapper.split.GroupMapper;
 import com.evbooking.backend.infrastructure.mapper.split.SettlementMapper;
 import com.evbooking.backend.presentation.dto.split.SettlementResponse;
@@ -27,6 +29,8 @@ public class SettlementService {
     private final SettlementRepository settlementRepository;
     private final UserRepository userRepository;
     private final GroupRepository groupRepository;
+    private final SplitExpenseRepository splitExpenseRepository;
+    private final SplitParticipantRepository splitParticipantRepository;
     private final GroupService groupService;
     private final SplitActivityService splitActivityService;
     private final SettlementMapper settlementMapper;
@@ -35,6 +39,8 @@ public class SettlementService {
     public SettlementService(SettlementRepository settlementRepository,
                             UserRepository userRepository,
                             GroupRepository groupRepository,
+                            SplitExpenseRepository splitExpenseRepository,
+                            SplitParticipantRepository splitParticipantRepository,
                             GroupService groupService,
                             SplitActivityService splitActivityService,
                             SettlementMapper settlementMapper,
@@ -42,6 +48,8 @@ public class SettlementService {
         this.settlementRepository = settlementRepository;
         this.userRepository = userRepository;
         this.groupRepository = groupRepository;
+        this.splitExpenseRepository = splitExpenseRepository;
+        this.splitParticipantRepository = splitParticipantRepository;
         this.groupService = groupService;
         this.splitActivityService = splitActivityService;
         this.settlementMapper = settlementMapper;
@@ -54,7 +62,7 @@ public class SettlementService {
      */
     public Settlement createStandaloneSettlement(String fromUsername, String toUsername,
                                                 BigDecimal amount, String currency,
-                                                Long groupId, String notes,
+                                                Long groupId, String groupType, String notes,
                                                 String recordedByUserId) {
 
         // Validate users exist
@@ -76,16 +84,43 @@ public class SettlementService {
         }
 
         // Validate group membership if groupId provided
-        if (groupId != null) {
-            if (!groupService.isGroupMember(groupId, fromUser.getId())) {
-                throw new RuntimeException("From user is not a member of this group");
-            }
-            if (!groupService.isGroupMember(groupId, toUser.getId())) {
-                throw new RuntimeException("To user is not a member of this group");
-            }
-            // Verify recorded by user is also a member
-            if (!groupService.isGroupMember(groupId, recordedByUserId)) {
-                throw new RuntimeException("You are not a member of this group");
+        if (groupId != null && groupType != null) {
+            if ("group".equals(groupType)) {
+                // Real group - validate membership
+                if (!groupService.isGroupMember(groupId, fromUser.getId())) {
+                    throw new RuntimeException("From user is not a member of this group");
+                }
+                if (!groupService.isGroupMember(groupId, toUser.getId())) {
+                    throw new RuntimeException("To user is not a member of this group");
+                }
+                // Verify recorded by user is also a member
+                if (!groupService.isGroupMember(groupId, recordedByUserId)) {
+                    throw new RuntimeException("You are not a member of this group");
+                }
+            } else if ("expense".equals(groupType)) {
+                // Non-group expense - groupId is actually the expense ID
+                Long expenseId = groupId;
+
+                // Verify expense exists
+                var expenseOpt = splitExpenseRepository.findById(expenseId);
+                if (expenseOpt.isEmpty()) {
+                    throw new RuntimeException("Expense not found");
+                }
+
+                // Verify users are participants in the expense
+                var fromParticipant = splitParticipantRepository.findBySplitExpenseIdAndUserId(expenseId, fromUser.getId());
+                var toParticipant = splitParticipantRepository.findBySplitExpenseIdAndUserId(expenseId, toUser.getId());
+                var recordedByParticipant = splitParticipantRepository.findBySplitExpenseIdAndUserId(expenseId, recordedByUserId);
+
+                if (fromParticipant.isEmpty()) {
+                    throw new RuntimeException("From user is not a participant in this expense");
+                }
+                if (toParticipant.isEmpty()) {
+                    throw new RuntimeException("To user is not a participant in this expense");
+                }
+                if (recordedByParticipant.isEmpty()) {
+                    throw new RuntimeException("You are not a participant in this expense");
+                }
             }
         }
 
@@ -142,12 +177,30 @@ public class SettlementService {
     }
 
     /**
-     * Get settlements for a group
+     * Get settlements for a group (supports both real groups and virtual groups for non-group expenses)
      */
-    public Page<SettlementResponse> getGroupSettlements(Long groupId, String userId, Pageable pageable) {
-        // Verify user is group member
-        if (!groupService.isGroupMember(groupId, userId)) {
-            throw new RuntimeException("You are not a member of this group");
+    public Page<SettlementResponse> getGroupSettlements(Long groupId, String groupType, String userId, Pageable pageable) {
+        // Validate based on type
+        if (groupType != null && "group".equals(groupType)) {
+            // Real group - verify user is group member
+            if (!groupService.isGroupMember(groupId, userId)) {
+                throw new RuntimeException("You are not a member of this group");
+            }
+        } else if (groupType != null && "expense".equals(groupType)) {
+            // Non-group expense - groupId is actually the expense ID
+            Long expenseId = groupId;
+
+            // Verify expense exists
+            var expenseOpt = splitExpenseRepository.findById(expenseId);
+            if (expenseOpt.isEmpty()) {
+                throw new RuntimeException("Expense not found");
+            }
+
+            // Verify user is a participant in the expense
+            var participant = splitParticipantRepository.findBySplitExpenseIdAndUserId(expenseId, userId);
+            if (participant.isEmpty()) {
+                throw new RuntimeException("You are not a participant in this expense");
+            }
         }
 
         var entities = settlementRepository.findByGroupId(groupId);

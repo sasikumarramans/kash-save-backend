@@ -47,6 +47,7 @@ public class SettlementController {
                 request.getAmount(),
                 request.getCurrency(),
                 request.getGroupId(),
+                request.getGroupType(),
                 request.getNotes(),
                 userId
             );
@@ -108,6 +109,7 @@ public class SettlementController {
                 request.getAmount(),
                 request.getCurrency(),
                 groupId,
+                request.getGroupType(),
                 request.getNotes(),
                 userId
             );
@@ -115,6 +117,7 @@ public class SettlementController {
             // Get the settlement response
             Page<SettlementResponse> page = settlementService.getGroupSettlements(
                 groupId,
+                request.getGroupType(),
                 userId,
                 PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "settlementDate"))
             );
@@ -189,6 +192,7 @@ public class SettlementController {
     @GetMapping("/groups/{groupId}/settlements")
     public ResponseEntity<ApiResponse<Page<SettlementResponse>>> getGroupSettlements(
             @PathVariable Long groupId,
+            @RequestParam(required = false) String groupType,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             HttpServletRequest servletRequest) {
@@ -200,7 +204,7 @@ public class SettlementController {
             }
 
             Pageable pageable = PageRequest.of(page, size);
-            Page<SettlementResponse> settlements = settlementService.getGroupSettlements(groupId, userId, pageable);
+            Page<SettlementResponse> settlements = settlementService.getGroupSettlements(groupId, groupType, userId, pageable);
 
             return ResponseEntity.ok(ApiResponse.success(settlements));
 
