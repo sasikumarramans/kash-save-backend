@@ -5,7 +5,9 @@ import com.evbooking.backend.domain.repository.UserRepository;
 import com.evbooking.backend.infrastructure.entity.UserEntity;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class UserRepositoryImpl implements UserRepository {
@@ -61,6 +63,13 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public boolean existsByUsername(String username) {
         return jpaUserRepository.existsByUsername(username);
+    }
+
+    @Override
+    public List<User> searchUsers(String searchTerm) {
+        return jpaUserRepository.searchUsers(searchTerm).stream()
+            .map(this::toDomain)
+            .collect(Collectors.toList());
     }
 
     private User toDomain(UserEntity entity) {

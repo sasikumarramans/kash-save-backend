@@ -184,4 +184,11 @@ public class UserProfileService {
         }
         return !userRepository.existsByUsername(username.trim());
     }
+
+    public List<User> searchUsers(String searchTerm) {
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        return userRepository.searchUsers(searchTerm.trim());
+    }
 }

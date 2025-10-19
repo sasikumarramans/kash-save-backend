@@ -144,4 +144,43 @@ public class UserProfileController {
                 .body(ApiResponse.error(e.getMessage()));
         }
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<UserSearchResponse>>> searchUsers(
+            @RequestParam String query,
+            HttpServletRequest request) {
+        try {
+            String userId = (String) request.getAttribute("userId");
+            if (userId == null) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("User not authenticated"));
+            }
+
+            if (query == null || query.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("Search query cannot be empty"));
+            }
+
+            List<User> users = userProfileService.searchUsers(query.trim());
+
+            // Convert to response DTO and exclude password
+            List<UserSearchResponse> response = users.stream()
+                .map(user -> new UserSearchResponse(
+                    user.getId(),
+                    user.getEmail(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getPhoneNumber(),
+                    user.getUsername(),
+                    user.getProfileImageUrl()
+                ))
+                .collect(java.util.stream.Collectors.toList());
+
+            return ResponseEntity.ok(ApiResponse.success(response));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        }
+    }
 }

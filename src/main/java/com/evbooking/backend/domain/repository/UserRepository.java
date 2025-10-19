@@ -1,6 +1,7 @@
 package com.evbooking.backend.domain.repository;
 
 import com.evbooking.backend.domain.model.User;
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository {
@@ -13,4 +14,5 @@ public interface UserRepository {
     boolean existsByEmail(String email);
     boolean existsByPhoneNumber(String phoneNumber);
     boolean existsByUsername(String username);
+    List<User> searchUsers(String searchTerm);
 }
