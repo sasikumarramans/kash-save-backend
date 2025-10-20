@@ -21,14 +21,15 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
     List<EntryEntity> findByBookIdAndDateTimeBetweenOrderByDateTimeDesc(
         Long bookId, LocalDateTime startDate, LocalDateTime endDate);
 
-    @Query("SELECT e FROM EntryEntity e WHERE e.bookId = :bookId AND " +
+    @Query(value = "SELECT * FROM entries e WHERE e.book_id = :bookId AND " +
            "(LOWER(e.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "CONCAT('', e.amount) LIKE CONCAT('%', :query, '%') OR " +
-           "CONCAT('', YEAR(e.dateTime)) LIKE CONCAT('%', :query, '%') OR " +
-           "CONCAT('', MONTH(e.dateTime)) LIKE CONCAT('%', :query, '%') OR " +
-           "CONCAT('', DAY(e.dateTime)) LIKE CONCAT('%', :query, '%') OR " +
-           "FUNCTION('DATE_FORMAT', e.dateTime, '%Y-%m-%d') LIKE CONCAT('%', :query, '%')) " +
-           "ORDER BY e.dateTime DESC")
+           "CAST(e.amount AS VARCHAR) LIKE CONCAT('%', :query, '%') OR " +
+           "CAST(EXTRACT(YEAR FROM e.date_time) AS VARCHAR) LIKE CONCAT('%', :query, '%') OR " +
+           "CAST(EXTRACT(MONTH FROM e.date_time) AS VARCHAR) LIKE CONCAT('%', :query, '%') OR " +
+           "CAST(EXTRACT(DAY FROM e.date_time) AS VARCHAR) LIKE CONCAT('%', :query, '%') OR " +
+           "TO_CHAR(e.date_time, 'YYYY-MM-DD') LIKE CONCAT('%', :query, '%')) " +
+           "ORDER BY e.date_time DESC",
+           nativeQuery = true)
     Page<EntryEntity> searchByBookIdAndQuery(@Param("bookId") Long bookId, @Param("query") String query, Pageable pageable);
 
     @Query("SELECT COALESCE(SUM(e.amount), 0) FROM EntryEntity e WHERE e.bookId = :bookId AND e.type = :type")
@@ -70,12 +71,13 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
            "ORDER BY e.dateTime DESC")
     Page<EntryEntity> findRecentEntriesByUserIdOrderByDateTimeDesc(@Param("userId") String userId, Pageable pageable);
 
-    @Query("SELECT e FROM EntryEntity e " +
-           "JOIN BookEntity b ON e.bookId = b.id " +
-           "WHERE b.userId = :userId AND " +
+    @Query(value = "SELECT e.* FROM entries e " +
+           "JOIN books b ON e.book_id = b.id " +
+           "WHERE b.user_id = :userId AND " +
            "(LOWER(e.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
-           "CONCAT('', e.amount) LIKE CONCAT('%', :query, '%')) " +
-           "ORDER BY e.dateTime DESC")
+           "CAST(e.amount AS VARCHAR) LIKE CONCAT('%', :query, '%')) " +
+           "ORDER BY e.date_time DESC",
+           nativeQuery = true)
     Page<EntryEntity> searchRecentEntriesByUserIdOrderByDateTimeDesc(@Param("userId") String userId, @Param("query") String query, Pageable pageable);
 
     // Overall user totals (all time)

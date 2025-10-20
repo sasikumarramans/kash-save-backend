@@ -27,3 +27,5 @@ force restart
 
   docker logs kash-save-staging-app --tail 100
 
+#check jar deploy time
+docker exec kash-save-staging-app ls -lh /app/app.jar
