@@ -317,38 +317,39 @@ public class GroupService {
     }
 
     /**
-     * Get user groups including virtual groups for each non-group expense
-     * Each non-group expense appears as a separate "Non-Group Expenses" entry
+     * Get user groups including ONE virtual "Non-Group Expenses" entry for all non-group expenses
      */
     public Page<GroupResponse> getUserGroupsWithFriends(String userId, Pageable pageable) {
         // Get regular groups
         Page<Group> groupsPage = getUserGroups(userId, pageable);
         List<GroupResponse> allGroups = new ArrayList<>();
 
-        // Get all non-group expenses for this user
-        Pageable nonGroupPageable = PageRequest.of(0, 1000); // Get all non-group expenses
-        var nonGroupExpensesPage = splitExpenseRepository.findByGroupIdIsNull(userId, nonGroupPageable);
+        // Count non-group expenses for this user
+        Pageable countPageable = PageRequest.of(0, 1);
+        var nonGroupExpensesPage = splitExpenseRepository.findByGroupIdIsNull(userId, countPageable);
+        long nonGroupExpenseCount = nonGroupExpensesPage.getTotalElements();
 
-        // Get current user details
-        Optional<User> currentUserOpt = userRepository.findById(userId);
-        String username = currentUserOpt.map(User::getUsername).orElse("You");
+        // Only add ONE virtual "Non-Group Expenses" entry if there are any non-group expenses
+        if (nonGroupExpenseCount > 0) {
+            // Get current user details
+            Optional<User> currentUserOpt = userRepository.findById(userId);
+            String username = currentUserOpt.map(User::getUsername).orElse("You");
 
-        // Create a virtual group for EACH non-group expense
-        nonGroupExpensesPage.getContent().forEach(expenseEntity -> {
-            GroupResponse nonGroupExpenseGroup = new GroupResponse(
-                expenseEntity.getId(), // Use expense ID directly
+            // Create ONE virtual "Non-Group Expenses" entry with special ID 0
+            GroupResponse nonGroupExpensesGroup = new GroupResponse(
+                0L, // Special ID 0 for virtual Non-Group Expenses
                 "expense", // Type: expense (not a real group)
                 "Non-Group Expenses",
-                expenseEntity.getDescription(), // Use expense description
-                expenseEntity.getCurrency(),
+                "Expenses split with friends without creating a group",
+                "INR", // Default currency
                 userId,
                 username,
-                0, // Member count will be calculated separately if needed
+                (int) nonGroupExpenseCount, // Member count shows number of expenses
                 null, // No members list
-                expenseEntity.getCreatedAt()
+                LocalDateTime.now()
             );
-            allGroups.add(nonGroupExpenseGroup);
-        });
+            allGroups.add(nonGroupExpensesGroup);
+        }
 
         // Add regular groups
         groupsPage.getContent().forEach(group -> {
@@ -374,8 +375,8 @@ public class GroupService {
             allGroups.add(response);
         });
 
-        // Calculate total elements (non-group expenses + regular groups)
-        long totalElements = groupsPage.getTotalElements() + nonGroupExpensesPage.getTotalElements();
+        // Calculate total elements (1 for non-group expenses if exists + regular groups)
+        long totalElements = groupsPage.getTotalElements() + (nonGroupExpenseCount > 0 ? 1 : 0);
 
         return new PageImpl<>(allGroups, pageable, totalElements);
     }

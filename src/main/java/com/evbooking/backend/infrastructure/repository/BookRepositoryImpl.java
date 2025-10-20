@@ -44,6 +44,15 @@ public class BookRepositoryImpl implements BookRepository {
     }
 
     @Override
+    public Page<Book> searchByUserIdAndName(String userId, String name, Pageable pageable) {
+        Page<BookEntity> entityPage = jpaBookRepository.searchByUserIdAndName(userId, name, pageable);
+        List<Book> books = entityPage.getContent().stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+        return new PageImpl<>(books, pageable, entityPage.getTotalElements());
+    }
+
+    @Override
     public Book save(Book book) {
         BookEntity entity = toEntity(book);
         BookEntity saved = jpaBookRepository.save(entity);

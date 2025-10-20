@@ -16,9 +16,20 @@ import java.util.List;
 @Repository
 public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
     Page<EntryEntity> findByBookIdOrderByDateTimeDesc(Long bookId, Pageable pageable);
+    Page<EntryEntity> findByBookIdAndTypeOrderByDateTimeDesc(Long bookId, EntryType type, Pageable pageable);
     List<EntryEntity> findByBookIdOrderByDateTimeDesc(Long bookId);
     List<EntryEntity> findByBookIdAndDateTimeBetweenOrderByDateTimeDesc(
         Long bookId, LocalDateTime startDate, LocalDateTime endDate);
+
+    @Query("SELECT e FROM EntryEntity e WHERE e.bookId = :bookId AND " +
+           "(LOWER(e.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "CAST(e.amount AS string) LIKE CONCAT('%', :query, '%') OR " +
+           "CAST(YEAR(e.dateTime) AS string) LIKE CONCAT('%', :query, '%') OR " +
+           "CAST(MONTH(e.dateTime) AS string) LIKE CONCAT('%', :query, '%') OR " +
+           "CAST(DAY(e.dateTime) AS string) LIKE CONCAT('%', :query, '%') OR " +
+           "FUNCTION('DATE_FORMAT', e.dateTime, '%Y-%m-%d') LIKE CONCAT('%', :query, '%')) " +
+           "ORDER BY e.dateTime DESC")
+    Page<EntryEntity> searchByBookIdAndQuery(@Param("bookId") Long bookId, @Param("query") String query, Pageable pageable);
 
     @Query("SELECT COALESCE(SUM(e.amount), 0) FROM EntryEntity e WHERE e.bookId = :bookId AND e.type = :type")
     BigDecimal getTotalAmountByBookIdAndType(@Param("bookId") Long bookId, @Param("type") EntryType type);
@@ -52,6 +63,20 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
         @Param("userId") String userId,
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT e FROM EntryEntity e " +
+           "JOIN BookEntity b ON e.bookId = b.id " +
+           "WHERE b.userId = :userId " +
+           "ORDER BY e.dateTime DESC")
+    Page<EntryEntity> findRecentEntriesByUserIdOrderByDateTimeDesc(@Param("userId") String userId, Pageable pageable);
+
+    @Query("SELECT e FROM EntryEntity e " +
+           "JOIN BookEntity b ON e.bookId = b.id " +
+           "WHERE b.userId = :userId AND " +
+           "(LOWER(e.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
+           "CAST(e.amount AS string) LIKE CONCAT('%', :query, '%')) " +
+           "ORDER BY e.dateTime DESC")
+    Page<EntryEntity> searchRecentEntriesByUserIdOrderByDateTimeDesc(@Param("userId") String userId, @Param("query") String query, Pageable pageable);
 
     // Overall user totals (all time)
     @Query("SELECT COALESCE(SUM(e.amount), 0) FROM EntryEntity e " +

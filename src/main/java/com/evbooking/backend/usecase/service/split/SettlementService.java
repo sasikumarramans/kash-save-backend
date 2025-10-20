@@ -13,6 +13,7 @@ import com.evbooking.backend.infrastructure.mapper.split.SettlementMapper;
 import com.evbooking.backend.presentation.dto.split.SettlementResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,7 +63,7 @@ public class SettlementService {
      */
     public Settlement createStandaloneSettlement(String fromUsername, String toUsername,
                                                 BigDecimal amount, String currency,
-                                                Long groupId, String groupType, String notes,
+                                                Long groupId, String groupType, Long expenseId, String notes,
                                                 String recordedByUserId) {
 
         // Validate users exist
@@ -98,8 +99,10 @@ public class SettlementService {
                     throw new RuntimeException("You are not a member of this group");
                 }
             } else if ("expense".equals(groupType)) {
-                // Non-group expense - groupId is actually the expense ID
-                Long expenseId = groupId;
+                // Non-group expense - need expenseId to validate
+                if (expenseId == null) {
+                    throw new RuntimeException("Expense ID is required for non-group expense settlements");
+                }
 
                 // Verify expense exists
                 var expenseOpt = splitExpenseRepository.findById(expenseId);
@@ -177,37 +180,48 @@ public class SettlementService {
     }
 
     /**
-     * Get settlements for a group (supports both real groups and virtual groups for non-group expenses)
+     * Get settlements for a group or non-group expenses
+     * For non-group expenses: if groupId=0, returns ALL non-group settlements. If expenseId provided, filters by that expense.
      */
     public Page<SettlementResponse> getGroupSettlements(Long groupId, String groupType, String userId, Pageable pageable) {
-        // Validate based on type
-        if (groupType != null && "group".equals(groupType)) {
+        List<SettlementResponse> settlements;
+
+        if (groupType != null && "expense".equals(groupType) && groupId != null && groupId == 0) {
+            // Virtual "Non-Group Expenses" - return all non-group expense settlements
+            // Get all non-group expenses for this user
+            var nonGroupExpenses = splitExpenseRepository.findByGroupIdIsNull(userId, PageRequest.of(0, 1000));
+
+            // Get settlements for all these expenses (settlements with groupId = null)
+            var allSettlements = settlementRepository.findByGroupId(null);
+
+            // Filter to only settlements where user is a participant in the expense
+            settlements = allSettlements.stream()
+                .map(settlementMapper::toDomain)
+                .filter(settlement ->
+                    settlement.getFromUserId().equals(userId) ||
+                    settlement.getToUserId().equals(userId))
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+
+        } else if (groupType != null && "group".equals(groupType)) {
             // Real group - verify user is group member
             if (!groupService.isGroupMember(groupId, userId)) {
                 throw new RuntimeException("You are not a member of this group");
             }
-        } else if (groupType != null && "expense".equals(groupType)) {
-            // Non-group expense - groupId is actually the expense ID
-            Long expenseId = groupId;
 
-            // Verify expense exists
-            var expenseOpt = splitExpenseRepository.findById(expenseId);
-            if (expenseOpt.isEmpty()) {
-                throw new RuntimeException("Expense not found");
-            }
-
-            // Verify user is a participant in the expense
-            var participant = splitParticipantRepository.findBySplitExpenseIdAndUserId(expenseId, userId);
-            if (participant.isEmpty()) {
-                throw new RuntimeException("You are not a participant in this expense");
-            }
+            var entities = settlementRepository.findByGroupId(groupId);
+            settlements = entities.stream()
+                .map(settlementMapper::toDomain)
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
+        } else {
+            // Default behavior - return settlements for the given groupId
+            var entities = settlementRepository.findByGroupId(groupId);
+            settlements = entities.stream()
+                .map(settlementMapper::toDomain)
+                .map(this::convertToResponse)
+                .collect(Collectors.toList());
         }
-
-        var entities = settlementRepository.findByGroupId(groupId);
-        var settlements = entities.stream()
-            .map(settlementMapper::toDomain)
-            .map(this::convertToResponse)
-            .collect(Collectors.toList());
 
         // For pagination, use PageImpl
         int start = (int) pageable.getOffset();

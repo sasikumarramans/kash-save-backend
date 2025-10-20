@@ -77,6 +77,19 @@ public class BookService {
         return bookRepository.findByUserId(userId, pageable);
     }
 
+    public Page<Book> searchBooks(String userId, String query, Pageable pageable) {
+        if (userId == null) {
+            throw new RuntimeException("User ID is required");
+        }
+
+        // If no query provided, return all books
+        if (query == null || query.trim().isEmpty()) {
+            return bookRepository.findByUserId(userId, pageable);
+        }
+
+        return bookRepository.searchByUserIdAndName(userId, query.trim(), pageable);
+    }
+
     public boolean verifyBookOwnership(Long bookId, String userId) {
         Optional<Book> book = bookRepository.findById(bookId);
         return book.isPresent() && book.get().getUserId().equals(userId);

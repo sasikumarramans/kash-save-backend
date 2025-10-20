@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -165,6 +166,7 @@ public class EntryController {
     @GetMapping
     public ResponseEntity<ApiResponse<PagedResponse<EntryResponse>>> getEntries(
             @RequestParam Long bookId,
+            @RequestParam(required = false) String type,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             HttpServletRequest httpRequest) {
@@ -176,7 +178,7 @@ public class EntryController {
             }
 
             Pageable pageable = PageRequest.of(page, size);
-            Page<Entry> entryPage = entryService.getEntriesByBookId(bookId, userId, pageable);
+            Page<Entry> entryPage = entryService.getEntriesByBookId(bookId, type, userId, pageable);
 
             List<EntryResponse> entryResponses = entryPage.getContent().stream()
                 .map(entry -> new EntryResponse(
@@ -203,6 +205,123 @@ public class EntryController {
             );
 
             return ResponseEntity.ok(ApiResponse.success(response));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<PagedResponse<EntryResponse>>> searchEntries(
+            @RequestParam Long bookId,
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest httpRequest) {
+        try {
+            String userId = (String) httpRequest.getAttribute("userId");
+            if (userId == null) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("User not authenticated"));
+            }
+
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Entry> entryPage = entryService.searchEntries(bookId, query, userId, pageable);
+
+            List<EntryResponse> entryResponses = entryPage.getContent().stream()
+                .map(entry -> new EntryResponse(
+                    entry.getId(),
+                    entry.getBookId(),
+                    entry.getType(),
+                    entry.getName(),
+                    entry.getAmount(),
+                    entry.getCurrency(),
+                    entry.getDateTime(),
+                    entry.getCreatedAt(),
+                    entry.getUpdatedAt()
+                ))
+                .collect(Collectors.toList());
+
+            PagedResponse<EntryResponse> response = new PagedResponse<>(
+                entryResponses,
+                entryPage.getNumber(),
+                entryPage.getSize(),
+                entryPage.getTotalElements(),
+                entryPage.getTotalPages(),
+                entryPage.isFirst(),
+                entryPage.isLast()
+            );
+
+            return ResponseEntity.ok(ApiResponse.success(response));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/recent")
+    public ResponseEntity<ApiResponse<PagedResponse<EntryResponse>>> getRecentEntries(
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest httpRequest) {
+        try {
+            String userId = (String) httpRequest.getAttribute("userId");
+            if (userId == null) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("User not authenticated"));
+            }
+
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Entry> entryPage = entryService.getRecentEntries(userId, query, pageable);
+
+            List<EntryResponse> entryResponses = entryPage.getContent().stream()
+                .map(entry -> new EntryResponse(
+                    entry.getId(),
+                    entry.getBookId(),
+                    entry.getType(),
+                    entry.getName(),
+                    entry.getAmount(),
+                    entry.getCurrency(),
+                    entry.getDateTime(),
+                    entry.getCreatedAt(),
+                    entry.getUpdatedAt()
+                ))
+                .collect(Collectors.toList());
+
+            PagedResponse<EntryResponse> response = new PagedResponse<>(
+                entryResponses,
+                entryPage.getNumber(),
+                entryPage.getSize(),
+                entryPage.getTotalElements(),
+                entryPage.getTotalPages(),
+                entryPage.isFirst(),
+                entryPage.isLast()
+            );
+
+            return ResponseEntity.ok(ApiResponse.success(response));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<ApiResponse<DashboardResponse>> getDashboard(
+            @RequestParam(required = false) BigDecimal goalAmount,
+            HttpServletRequest httpRequest) {
+        try {
+            String userId = (String) httpRequest.getAttribute("userId");
+            if (userId == null) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("User not authenticated"));
+            }
+
+            DashboardResponse dashboard = entryService.getDashboard(userId, goalAmount);
+            return ResponseEntity.ok(ApiResponse.success(dashboard));
 
         } catch (Exception e) {
             return ResponseEntity.badRequest()

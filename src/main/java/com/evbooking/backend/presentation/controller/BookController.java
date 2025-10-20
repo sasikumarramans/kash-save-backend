@@ -165,4 +165,55 @@ public class BookController {
                 .body(ApiResponse.error(e.getMessage()));
         }
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<PagedResponse<BookResponse>>> searchBooks(
+            @RequestParam(required = false) String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            HttpServletRequest httpRequest) {
+        try {
+            String userId = (String) httpRequest.getAttribute("userId");
+            if (userId == null) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("User not authenticated"));
+            }
+
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Book> bookPage = bookService.searchBooks(userId, query, pageable);
+
+            List<BookResponse> bookResponses = bookPage.getContent().stream()
+                .map(book -> {
+                    BookService.BookSummary summary = bookService.getBookSummary(book.getId(), userId);
+                    return new BookResponse(
+                        book.getId(),
+                        book.getName(),
+                        book.getDescription(),
+                        book.getCurrency(),
+                        book.getCreatedAt(),
+                        book.getUpdatedAt(),
+                        summary.getTotalExpense(),
+                        summary.getTotalIncome(),
+                        summary.getLastEntryDateTime()
+                    );
+                })
+                .collect(Collectors.toList());
+
+            PagedResponse<BookResponse> response = new PagedResponse<>(
+                bookResponses,
+                bookPage.getNumber(),
+                bookPage.getSize(),
+                bookPage.getTotalElements(),
+                bookPage.getTotalPages(),
+                bookPage.isFirst(),
+                bookPage.isLast()
+            );
+
+            return ResponseEntity.ok(ApiResponse.success(response));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        }
+    }
 }

@@ -48,6 +48,7 @@ public class SettlementController {
                 request.getCurrency(),
                 request.getGroupId(),
                 request.getGroupType(),
+                request.getExpenseId(),
                 request.getNotes(),
                 userId
             );
@@ -110,6 +111,7 @@ public class SettlementController {
                 request.getCurrency(),
                 groupId,
                 request.getGroupType(),
+                request.getExpenseId(),
                 request.getNotes(),
                 userId
             );

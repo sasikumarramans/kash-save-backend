@@ -13,8 +13,12 @@ import java.util.Optional;
 public interface EntryRepository {
     Optional<Entry> findById(Long id);
     Page<Entry> findByBookId(Long bookId, Pageable pageable);
+    Page<Entry> findByBookIdAndType(Long bookId, EntryType type, Pageable pageable);
     List<Entry> findByBookId(Long bookId);
     List<Entry> findByBookIdAndDateTimeBetween(Long bookId, LocalDateTime startDate, LocalDateTime endDate);
+    Page<Entry> searchByBookIdAndQuery(Long bookId, String query, Pageable pageable);
+    Page<Entry> findRecentEntriesByUserId(String userId, Pageable pageable);
+    Page<Entry> searchRecentEntriesByUserId(String userId, String query, Pageable pageable);
     Entry save(Entry entry);
     void deleteById(Long id);
     boolean existsById(Long id);

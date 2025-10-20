@@ -39,6 +39,15 @@ public class EntryRepositoryImpl implements EntryRepository {
     }
 
     @Override
+    public Page<Entry> findByBookIdAndType(Long bookId, EntryType type, Pageable pageable) {
+        Page<EntryEntity> entityPage = jpaEntryRepository.findByBookIdAndTypeOrderByDateTimeDesc(bookId, type, pageable);
+        List<Entry> entries = entityPage.getContent().stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+        return new PageImpl<>(entries, pageable, entityPage.getTotalElements());
+    }
+
+    @Override
     public List<Entry> findByBookId(Long bookId) {
         return jpaEntryRepository.findByBookIdOrderByDateTimeDesc(bookId)
                 .stream()
@@ -52,6 +61,15 @@ public class EntryRepositoryImpl implements EntryRepository {
                 .stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Page<Entry> searchByBookIdAndQuery(Long bookId, String query, Pageable pageable) {
+        Page<EntryEntity> entityPage = jpaEntryRepository.searchByBookIdAndQuery(bookId, query, pageable);
+        List<Entry> entries = entityPage.getContent().stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+        return new PageImpl<>(entries, pageable, entityPage.getTotalElements());
     }
 
     @Override
@@ -123,6 +141,24 @@ public class EntryRepositoryImpl implements EntryRepository {
     @Override
     public BigDecimal getTotalIncomeByUserId(String userId) {
         return jpaEntryRepository.getTotalAmountByUserIdAndType(userId, EntryType.INCOME);
+    }
+
+    @Override
+    public Page<Entry> findRecentEntriesByUserId(String userId, Pageable pageable) {
+        Page<EntryEntity> entityPage = jpaEntryRepository.findRecentEntriesByUserIdOrderByDateTimeDesc(userId, pageable);
+        List<Entry> entries = entityPage.getContent().stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+        return new PageImpl<>(entries, pageable, entityPage.getTotalElements());
+    }
+
+    @Override
+    public Page<Entry> searchRecentEntriesByUserId(String userId, String query, Pageable pageable) {
+        Page<EntryEntity> entityPage = jpaEntryRepository.searchRecentEntriesByUserIdOrderByDateTimeDesc(userId, query, pageable);
+        List<Entry> entries = entityPage.getContent().stream()
+                .map(this::toDomain)
+                .collect(Collectors.toList());
+        return new PageImpl<>(entries, pageable, entityPage.getTotalElements());
     }
 
     private Entry toDomain(EntryEntity entity) {
