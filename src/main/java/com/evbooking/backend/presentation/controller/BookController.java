@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 @RestController
 @RequestMapping("/books")
@@ -84,6 +85,19 @@ public class BookController {
                         summary.getLastEntryDateTime()
                     );
                 })
+                .sorted((b1, b2) -> {
+                    // Sort by lastEntryDateTime in descending order (nulls last)
+                    if (b1.getLastEntryDateTime() == null && b2.getLastEntryDateTime() == null) {
+                        return 0;
+                    }
+                    if (b1.getLastEntryDateTime() == null) {
+                        return 1;
+                    }
+                    if (b2.getLastEntryDateTime() == null) {
+                        return -1;
+                    }
+                    return b2.getLastEntryDateTime().compareTo(b1.getLastEntryDateTime());
+                })
                 .collect(Collectors.toList());
 
             PagedResponse<BookResponse> response = new PagedResponse<>(
@@ -94,6 +108,41 @@ public class BookController {
                 bookPage.getTotalPages(),
                 bookPage.isFirst(),
                 bookPage.isLast()
+            );
+
+            return ResponseEntity.ok(ApiResponse.success(response));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{bookId}")
+    public ResponseEntity<ApiResponse<BookResponse>> updateBook(@PathVariable Long bookId,
+                                                               @Valid @RequestBody UpdateBookRequest request,
+                                                               HttpServletRequest httpRequest) {
+        try {
+            String userId = (String) httpRequest.getAttribute("userId");
+            if (userId == null) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("User not authenticated"));
+            }
+
+            Book book = bookService.updateBook(bookId, request.getName(), request.getDescription(),
+                                              request.getCurrency(), userId);
+
+            BookService.BookSummary summary = bookService.getBookSummary(book.getId(), userId);
+            BookResponse response = new BookResponse(
+                book.getId(),
+                book.getName(),
+                book.getDescription(),
+                book.getCurrency(),
+                book.getCreatedAt(),
+                book.getUpdatedAt(),
+                summary.getTotalExpense(),
+                summary.getTotalIncome(),
+                summary.getLastEntryDateTime()
             );
 
             return ResponseEntity.ok(ApiResponse.success(response));

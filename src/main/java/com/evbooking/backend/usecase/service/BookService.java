@@ -47,6 +47,39 @@ public class BookService {
         return bookRepository.findById(bookId);
     }
 
+    public Book updateBook(Long bookId, String name, String description, String currency, String userId) {
+        if (bookId == null) {
+            throw new RuntimeException("Book ID is required");
+        }
+
+        if (userId == null) {
+            throw new RuntimeException("User ID is required");
+        }
+
+        Optional<Book> bookOpt = bookRepository.findById(bookId);
+        if (bookOpt.isEmpty()) {
+            throw new RuntimeException("Book not found");
+        }
+
+        Book book = bookOpt.get();
+        if (!book.getUserId().equals(userId)) {
+            throw new RuntimeException("You can only update your own books");
+        }
+
+        // Update only non-null fields
+        if (name != null && !name.trim().isEmpty()) {
+            book.setName(name);
+        }
+        if (description != null) {
+            book.setDescription(description);
+        }
+        if (currency != null && !currency.trim().isEmpty()) {
+            book.setCurrency(currency);
+        }
+
+        return bookRepository.save(book);
+    }
+
     public void deleteBook(Long bookId, String userId) {
         if (bookId == null) {
             throw new RuntimeException("Book ID is required");

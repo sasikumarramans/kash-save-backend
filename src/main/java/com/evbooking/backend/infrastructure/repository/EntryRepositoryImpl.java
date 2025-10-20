@@ -168,6 +168,7 @@ public class EntryRepositoryImpl implements EntryRepository {
         entry.setType(entity.getType());
         entry.setName(entity.getName());
         entry.setAmount(entity.getAmount());
+        entry.setCurrency(entity.getCurrency());
         entry.setDateTime(entity.getDateTime());
         entry.setCreatedAt(entity.getCreatedAt());
         entry.setUpdatedAt(entity.getUpdatedAt());
@@ -181,6 +182,7 @@ public class EntryRepositoryImpl implements EntryRepository {
         entity.setType(entry.getType());
         entity.setName(entry.getName());
         entity.setAmount(entry.getAmount());
+        entity.setCurrency(entry.getCurrency());
         entity.setDateTime(entry.getDateTime());
         entity.setCreatedAt(entry.getCreatedAt());
         entity.setUpdatedAt(entry.getUpdatedAt());
