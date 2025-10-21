@@ -90,13 +90,13 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
         @Param("type") EntryType type);
 
     // Category aggregations for user
-    @Query(value = "SELECT e.name AS name, SUM(e.amount) AS totalAmount, COUNT(e.id) AS count " +
+    @Query(value = "SELECT b.name AS name, SUM(e.amount) AS totalAmount, COUNT(e.id) AS count " +
            "FROM entries e " +
            "JOIN books b ON e.book_id = b.id " +
            "WHERE b.user_id = :userId " +
            "AND e.type = :type " +
            "AND e.date_time BETWEEN :startDate AND :endDate " +
-           "GROUP BY e.name " +
+           "GROUP BY b.name " +
            "ORDER BY totalAmount DESC",
            nativeQuery = true)
     List<EntryRepository.CategoryData> getCategoryDataByUserIdAndDateRange(
@@ -105,7 +105,7 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate);
 
-    // Category aggregations for book
+    // Category aggregations for book (grouped by entry name as subcategories within the book)
     @Query(value = "SELECT e.name AS name, SUM(e.amount) AS totalAmount, COUNT(e.id) AS count " +
            "FROM entries e " +
            "WHERE e.book_id = :bookId " +

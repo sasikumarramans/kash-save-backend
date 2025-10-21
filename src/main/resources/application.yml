@@ -19,11 +19,12 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: false
+    show-sql: true
     properties:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        use_sql_comments: true
 
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
@@ -59,7 +60,11 @@ spring:
 logging:
   level:
     com.kashsave: DEBUG
+    com.evbooking: INFO
+    com.evbooking.backend.usecase.service.ReportService: DEBUG
     org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

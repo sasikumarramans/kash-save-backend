@@ -29,3 +29,6 @@ force restart
 
 #check jar deploy time
 docker exec kash-save-staging-app ls -lh /app/app.jar
+
+run locally
+./gradlew bootRun

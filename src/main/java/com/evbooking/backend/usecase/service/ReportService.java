@@ -3,6 +3,8 @@ package com.evbooking.backend.usecase.service;
 import com.evbooking.backend.domain.model.EntryType;
 import com.evbooking.backend.domain.repository.EntryRepository;
 import com.evbooking.backend.presentation.dto.CategorySummary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -13,6 +15,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class ReportService {
+
+    private static final Logger logger = LoggerFactory.getLogger(ReportService.class);
 
     private final EntryRepository entryRepository;
     private final BookService bookService;
@@ -136,19 +140,35 @@ public class ReportService {
             throw new RuntimeException("Start date and end date are required");
         }
 
+        logger.info("getUserCategoryReport - userId: {}, period: {}, startDate: {}, endDate: {}",
+                    userId, period, startDate, endDate);
+
         BigDecimal totalExpense = entryRepository.getTotalExpensesByUserIdAndDateRange(userId, startDate, endDate);
         BigDecimal totalIncome = entryRepository.getTotalIncomeByUserIdAndDateRange(userId, startDate, endDate);
         BigDecimal balance = totalIncome.subtract(totalExpense);
 
-        List<CategorySummary> expenseCategories = buildCategorySummaries(
-            entryRepository.getCategoryDataByUserIdAndDateRange(userId, EntryType.EXPENSE.name(), startDate, endDate),
-            totalExpense
-        );
+        logger.info("getUserCategoryReport - totalExpense: {}, totalIncome: {}, balance: {}",
+                    totalExpense, totalIncome, balance);
 
-        List<CategorySummary> incomeCategories = buildCategorySummaries(
-            entryRepository.getCategoryDataByUserIdAndDateRange(userId, EntryType.INCOME.name(), startDate, endDate),
-            totalIncome
-        );
+        List<EntryRepository.CategoryData> expenseCategoryData =
+            entryRepository.getCategoryDataByUserIdAndDateRange(userId, EntryType.EXPENSE.name(), startDate, endDate);
+        logger.info("getUserCategoryReport - Expense category data count: {}", expenseCategoryData.size());
+        expenseCategoryData.forEach(data ->
+            logger.info("  Expense category: name={}, amount={}, count={}",
+                       data.getName(), data.getTotalAmount(), data.getCount()));
+
+        List<EntryRepository.CategoryData> incomeCategoryData =
+            entryRepository.getCategoryDataByUserIdAndDateRange(userId, EntryType.INCOME.name(), startDate, endDate);
+        logger.info("getUserCategoryReport - Income category data count: {}", incomeCategoryData.size());
+        incomeCategoryData.forEach(data ->
+            logger.info("  Income category: name={}, amount={}, count={}",
+                       data.getName(), data.getTotalAmount(), data.getCount()));
+
+        List<CategorySummary> expenseCategories = buildCategorySummaries(expenseCategoryData, totalExpense);
+        List<CategorySummary> incomeCategories = buildCategorySummaries(incomeCategoryData, totalIncome);
+
+        logger.info("getUserCategoryReport - Final expense categories: {}, income categories: {}",
+                    expenseCategories.size(), incomeCategories.size());
 
         return new CategoryReport(totalExpense, totalIncome, balance, startDate, endDate, period,
                                  expenseCategories, incomeCategories);

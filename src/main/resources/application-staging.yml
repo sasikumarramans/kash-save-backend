@@ -15,11 +15,14 @@ spring:
       leak-detection-threshold: 60000
 
   jpa:
-    show-sql: false
+    show-sql: true
     hibernate:
       ddl-auto: validate
     properties:
       hibernate:
+        format_sql: true
+        use_sql_comments: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           batch_size: 20
           order_inserts: true
@@ -56,8 +59,11 @@ spring:
 logging:
   level:
     com.kashsave: INFO
+    com.evbooking: INFO
+    com.evbooking.backend.usecase.service.ReportService: DEBUG
     org.springframework.security: WARN
-    org.hibernate.SQL: WARN
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
   file:
     name: logs/kash-save-staging.log
   logback:
