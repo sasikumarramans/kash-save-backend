@@ -162,12 +162,12 @@ public class EntryRepositoryImpl implements EntryRepository {
     }
 
     @Override
-    public List<CategoryData> getCategoryDataByUserIdAndDateRange(String userId, EntryType type, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<CategoryData> getCategoryDataByUserIdAndDateRange(String userId, String type, LocalDateTime startDate, LocalDateTime endDate) {
         return jpaEntryRepository.getCategoryDataByUserIdAndDateRange(userId, type, startDate, endDate);
     }
 
     @Override
-    public List<CategoryData> getCategoryDataByBookIdAndDateRange(Long bookId, EntryType type, LocalDateTime startDate, LocalDateTime endDate) {
+    public List<CategoryData> getCategoryDataByBookIdAndDateRange(Long bookId, String type, LocalDateTime startDate, LocalDateTime endDate) {
         return jpaEntryRepository.getCategoryDataByBookIdAndDateRange(bookId, type, startDate, endDate);
     }
 
