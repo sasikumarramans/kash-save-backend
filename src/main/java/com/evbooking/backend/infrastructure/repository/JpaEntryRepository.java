@@ -36,8 +36,10 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
     @Query("SELECT COALESCE(SUM(e.amount), 0) FROM EntryEntity e WHERE e.bookId = :bookId AND e.type = :type")
     BigDecimal getTotalAmountByBookIdAndType(@Param("bookId") Long bookId, @Param("type") EntryType type);
 
-    @Query("SELECT COALESCE(SUM(e.amount), 0) FROM EntryEntity e " +
-           "WHERE e.bookId = :bookId AND e.type = :type AND e.dateTime BETWEEN :startDate AND :endDate")
+    @Query(value = "SELECT COALESCE(SUM(e.amount), 0) FROM entries e " +
+           "WHERE e.book_id = :bookId AND e.type = CAST(:type AS VARCHAR) " +
+           "AND DATE(e.date_time) >= DATE(:startDate) AND DATE(e.date_time) <= DATE(:endDate)",
+           nativeQuery = true)
     BigDecimal getTotalAmountByBookIdAndTypeAndDateRange(
         @Param("bookId") Long bookId,
         @Param("type") EntryType type,
@@ -114,7 +116,7 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
            "FROM entries e " +
            "WHERE e.book_id = :bookId " +
            "AND e.type = :type " +
-           "AND e.date_time BETWEEN :startDate AND :endDate " +
+           "AND DATE(e.date_time) >= DATE(:startDate) AND DATE(e.date_time) <= DATE(:endDate) " +
            "GROUP BY e.name " +
            "ORDER BY totalAmount DESC",
            nativeQuery = true)
