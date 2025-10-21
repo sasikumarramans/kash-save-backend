@@ -140,35 +140,67 @@ public class ReportService {
             throw new RuntimeException("Start date and end date are required");
         }
 
-        logger.info("getUserCategoryReport - userId: {}, period: {}, startDate: {}, endDate: {}",
+        logger.info("==================== getUserCategoryReport START ====================");
+        logger.info("Request Parameters - userId: {}, period: {}, startDate: {}, endDate: {}",
                     userId, period, startDate, endDate);
+
+        // Get all entries for this user in the date range to debug
+        List<com.evbooking.backend.domain.model.Entry> allEntriesInRange =
+            entryRepository.findByUserIdAndDateTimeBetween(userId, startDate, endDate);
+        logger.info("Total entries found in date range: {}", allEntriesInRange.size());
+
+        if (allEntriesInRange.isEmpty()) {
+            logger.warn("NO ENTRIES FOUND for userId={} between {} and {}", userId, startDate, endDate);
+            logger.warn("This could mean: 1) No entries exist, 2) Entries are outside date range, 3) UserId mismatch");
+        } else {
+            logger.info("Entries in date range breakdown:");
+            long expenseCount = allEntriesInRange.stream().filter(e -> e.getType() == EntryType.EXPENSE).count();
+            long incomeCount = allEntriesInRange.stream().filter(e -> e.getType() == EntryType.INCOME).count();
+            logger.info("  - EXPENSE entries: {}", expenseCount);
+            logger.info("  - INCOME entries: {}", incomeCount);
+
+            // Log first few entries for debugging
+            allEntriesInRange.stream().limit(5).forEach(entry ->
+                logger.info("  Sample Entry: id={}, bookId={}, type={}, name={}, amount={}, dateTime={}",
+                           entry.getId(), entry.getBookId(), entry.getType(), entry.getName(),
+                           entry.getAmount(), entry.getDateTime()));
+        }
 
         BigDecimal totalExpense = entryRepository.getTotalExpensesByUserIdAndDateRange(userId, startDate, endDate);
         BigDecimal totalIncome = entryRepository.getTotalIncomeByUserIdAndDateRange(userId, startDate, endDate);
         BigDecimal balance = totalIncome.subtract(totalExpense);
 
-        logger.info("getUserCategoryReport - totalExpense: {}, totalIncome: {}, balance: {}",
+        logger.info("Aggregated Totals - totalExpense: {}, totalIncome: {}, balance: {}",
                     totalExpense, totalIncome, balance);
 
         List<EntryRepository.CategoryData> expenseCategoryData =
             entryRepository.getCategoryDataByUserIdAndDateRange(userId, EntryType.EXPENSE.name(), startDate, endDate);
-        logger.info("getUserCategoryReport - Expense category data count: {}", expenseCategoryData.size());
-        expenseCategoryData.forEach(data ->
-            logger.info("  Expense category: name={}, amount={}, count={}",
-                       data.getName(), data.getTotalAmount(), data.getCount()));
+        logger.info("Expense Categories Retrieved: {} categories", expenseCategoryData.size());
+        if (expenseCategoryData.isEmpty()) {
+            logger.warn("NO EXPENSE CATEGORIES found - This means either no expenses exist or GROUP BY returned empty");
+        } else {
+            expenseCategoryData.forEach(data ->
+                logger.info("  Expense Category: bookName='{}', totalAmount={}, entryCount={}",
+                           data.getName(), data.getTotalAmount(), data.getCount()));
+        }
 
         List<EntryRepository.CategoryData> incomeCategoryData =
             entryRepository.getCategoryDataByUserIdAndDateRange(userId, EntryType.INCOME.name(), startDate, endDate);
-        logger.info("getUserCategoryReport - Income category data count: {}", incomeCategoryData.size());
-        incomeCategoryData.forEach(data ->
-            logger.info("  Income category: name={}, amount={}, count={}",
-                       data.getName(), data.getTotalAmount(), data.getCount()));
+        logger.info("Income Categories Retrieved: {} categories", incomeCategoryData.size());
+        if (incomeCategoryData.isEmpty()) {
+            logger.warn("NO INCOME CATEGORIES found - This means either no income exists or GROUP BY returned empty");
+        } else {
+            incomeCategoryData.forEach(data ->
+                logger.info("  Income Category: bookName='{}', totalAmount={}, entryCount={}",
+                           data.getName(), data.getTotalAmount(), data.getCount()));
+        }
 
         List<CategorySummary> expenseCategories = buildCategorySummaries(expenseCategoryData, totalExpense);
         List<CategorySummary> incomeCategories = buildCategorySummaries(incomeCategoryData, totalIncome);
 
-        logger.info("getUserCategoryReport - Final expense categories: {}, income categories: {}",
+        logger.info("Final Result - expenseCategories: {}, incomeCategories: {}",
                     expenseCategories.size(), incomeCategories.size());
+        logger.info("==================== getUserCategoryReport END ====================");
 
         return new CategoryReport(totalExpense, totalIncome, balance, startDate, endDate, period,
                                  expenseCategories, incomeCategories);

@@ -5,6 +5,8 @@ import com.evbooking.backend.usecase.service.ReportService;
 import com.evbooking.backend.usecase.service.PdfReportService;
 import com.evbooking.backend.usecase.service.TempPdfStorageService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,6 +19,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/reports")
 public class ReportController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ReportController.class);
 
     private final ReportService reportService;
     private final PdfReportService pdfReportService;
@@ -155,6 +159,9 @@ public class ReportController {
                     .body(ApiResponse.error("User not authenticated"));
             }
 
+            logger.info("getUserCategorySummary - Received request: userId={}, period={}, page={}, size={}",
+                       userId, period, page, size);
+
             LocalDateTime now = LocalDateTime.now();
             LocalDateTime startDate;
 
@@ -178,6 +185,8 @@ public class ReportController {
                     return ResponseEntity.badRequest()
                         .body(ApiResponse.error("Invalid period. Valid values: this_month, 30_days, 60_days, 90_days, 6_months"));
             }
+
+            logger.info("getUserCategorySummary - Date range calculated: startDate={}, endDate={}", startDate, now);
 
             ReportService.CategoryReport report = reportService.getUserCategoryReport(userId, startDate, now, period);
 
