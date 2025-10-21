@@ -37,12 +37,12 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
     BigDecimal getTotalAmountByBookIdAndType(@Param("bookId") Long bookId, @Param("type") EntryType type);
 
     @Query(value = "SELECT COALESCE(SUM(e.amount), 0) FROM entries e " +
-           "WHERE e.book_id = :bookId AND e.type = CAST(:type AS VARCHAR) " +
+           "WHERE e.book_id = :bookId AND e.type = :type " +
            "AND DATE(e.date_time) >= DATE(:startDate) AND DATE(e.date_time) <= DATE(:endDate)",
            nativeQuery = true)
     BigDecimal getTotalAmountByBookIdAndTypeAndDateRange(
         @Param("bookId") Long bookId,
-        @Param("type") EntryType type,
+        @Param("type") String type,
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate);
 
@@ -52,12 +52,12 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
     // User-wide queries (across all user's books)
     @Query(value = "SELECT COALESCE(SUM(e.amount), 0) FROM entries e " +
            "JOIN books b ON e.book_id = b.id " +
-           "WHERE b.user_id = :userId AND e.type = CAST(:type AS VARCHAR) " +
+           "WHERE b.user_id = :userId AND e.type = :type " +
            "AND DATE(e.date_time) >= DATE(:startDate) AND DATE(e.date_time) <= DATE(:endDate)",
            nativeQuery = true)
     BigDecimal getTotalAmountByUserIdAndTypeAndDateRange(
         @Param("userId") String userId,
-        @Param("type") EntryType type,
+        @Param("type") String type,
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate);
 

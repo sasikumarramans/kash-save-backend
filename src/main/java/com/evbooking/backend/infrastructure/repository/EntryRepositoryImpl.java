@@ -101,12 +101,12 @@ public class EntryRepositoryImpl implements EntryRepository {
 
     @Override
     public BigDecimal getTotalExpensesByBookIdAndDateRange(Long bookId, LocalDateTime startDate, LocalDateTime endDate) {
-        return jpaEntryRepository.getTotalAmountByBookIdAndTypeAndDateRange(bookId, EntryType.EXPENSE, startDate, endDate);
+        return jpaEntryRepository.getTotalAmountByBookIdAndTypeAndDateRange(bookId, "EXPENSE", startDate, endDate);
     }
 
     @Override
     public BigDecimal getTotalIncomeByBookIdAndDateRange(Long bookId, LocalDateTime startDate, LocalDateTime endDate) {
-        return jpaEntryRepository.getTotalAmountByBookIdAndTypeAndDateRange(bookId, EntryType.INCOME, startDate, endDate);
+        return jpaEntryRepository.getTotalAmountByBookIdAndTypeAndDateRange(bookId, "INCOME", startDate, endDate);
     }
 
     @Override
@@ -117,12 +117,12 @@ public class EntryRepositoryImpl implements EntryRepository {
 
     @Override
     public BigDecimal getTotalExpensesByUserIdAndDateRange(String userId, LocalDateTime startDate, LocalDateTime endDate) {
-        return jpaEntryRepository.getTotalAmountByUserIdAndTypeAndDateRange(userId, EntryType.EXPENSE, startDate, endDate);
+        return jpaEntryRepository.getTotalAmountByUserIdAndTypeAndDateRange(userId, "EXPENSE", startDate, endDate);
     }
 
     @Override
     public BigDecimal getTotalIncomeByUserIdAndDateRange(String userId, LocalDateTime startDate, LocalDateTime endDate) {
-        return jpaEntryRepository.getTotalAmountByUserIdAndTypeAndDateRange(userId, EntryType.INCOME, startDate, endDate);
+        return jpaEntryRepository.getTotalAmountByUserIdAndTypeAndDateRange(userId, "INCOME", startDate, endDate);
     }
 
     @Override
