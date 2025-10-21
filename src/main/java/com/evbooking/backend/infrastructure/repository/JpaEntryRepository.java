@@ -93,10 +93,9 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
     @Query(value = "SELECT e.name AS name, SUM(e.amount) AS totalAmount, COUNT(e.id) AS count " +
            "FROM entries e " +
            "JOIN books b ON e.book_id = b.id " +
-           "WHERE b.user_id = CAST(:userId AS VARCHAR) " +
-           "AND e.type = CAST(:type AS VARCHAR) " +
-           "AND e.date_time >= CAST(:startDate AS TIMESTAMP) " +
-           "AND e.date_time <= CAST(:endDate AS TIMESTAMP) " +
+           "WHERE b.user_id = :userId " +
+           "AND e.type = :type " +
+           "AND e.date_time BETWEEN :startDate AND :endDate " +
            "GROUP BY e.name " +
            "ORDER BY totalAmount DESC",
            nativeQuery = true)
@@ -110,9 +109,8 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
     @Query(value = "SELECT e.name AS name, SUM(e.amount) AS totalAmount, COUNT(e.id) AS count " +
            "FROM entries e " +
            "WHERE e.book_id = :bookId " +
-           "AND e.type = CAST(:type AS VARCHAR) " +
-           "AND e.date_time >= CAST(:startDate AS TIMESTAMP) " +
-           "AND e.date_time <= CAST(:endDate AS TIMESTAMP) " +
+           "AND e.type = :type " +
+           "AND e.date_time BETWEEN :startDate AND :endDate " +
            "GROUP BY e.name " +
            "ORDER BY totalAmount DESC",
            nativeQuery = true)
