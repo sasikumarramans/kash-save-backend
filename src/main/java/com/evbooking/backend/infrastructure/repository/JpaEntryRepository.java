@@ -48,19 +48,23 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
     LocalDateTime findLatestEntryDateTimeByBookId(@Param("bookId") Long bookId);
 
     // User-wide queries (across all user's books)
-    @Query("SELECT COALESCE(SUM(e.amount), 0) FROM EntryEntity e " +
-           "JOIN BookEntity b ON e.bookId = b.id " +
-           "WHERE b.userId = :userId AND e.type = :type AND e.dateTime BETWEEN :startDate AND :endDate")
+    @Query(value = "SELECT COALESCE(SUM(e.amount), 0) FROM entries e " +
+           "JOIN books b ON e.book_id = b.id " +
+           "WHERE b.user_id = :userId AND e.type = CAST(:type AS VARCHAR) " +
+           "AND DATE(e.date_time) >= DATE(:startDate) AND DATE(e.date_time) <= DATE(:endDate)",
+           nativeQuery = true)
     BigDecimal getTotalAmountByUserIdAndTypeAndDateRange(
         @Param("userId") String userId,
         @Param("type") EntryType type,
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate);
 
-    @Query("SELECT e FROM EntryEntity e " +
-           "JOIN BookEntity b ON e.bookId = b.id " +
-           "WHERE b.userId = :userId AND e.dateTime BETWEEN :startDate AND :endDate " +
-           "ORDER BY e.dateTime DESC")
+    @Query(value = "SELECT e.* FROM entries e " +
+           "JOIN books b ON e.book_id = b.id " +
+           "WHERE b.user_id = :userId " +
+           "AND DATE(e.date_time) >= DATE(:startDate) AND DATE(e.date_time) <= DATE(:endDate) " +
+           "ORDER BY e.date_time DESC",
+           nativeQuery = true)
     List<EntryEntity> findByUserIdAndDateTimeBetweenOrderByDateTimeDesc(
         @Param("userId") String userId,
         @Param("startDate") LocalDateTime startDate,
@@ -95,7 +99,7 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
            "JOIN books b ON e.book_id = b.id " +
            "WHERE b.user_id = :userId " +
            "AND e.type = :type " +
-           "AND e.date_time BETWEEN :startDate AND :endDate " +
+           "AND DATE(e.date_time) >= DATE(:startDate) AND DATE(e.date_time) <= DATE(:endDate) " +
            "GROUP BY b.name " +
            "ORDER BY totalAmount DESC",
            nativeQuery = true)

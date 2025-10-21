@@ -32,3 +32,6 @@ docker exec kash-save-staging-app ls -lh /app/app.jar
 
 run locally
 ./gradlew bootRun
+
+db connection
+docker exec -it kash-save-staging-postgres psql -U kash_staging_user -d kash_save_staging_db
