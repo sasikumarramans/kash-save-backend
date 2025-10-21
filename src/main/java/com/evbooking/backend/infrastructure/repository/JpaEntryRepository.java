@@ -99,7 +99,7 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
            nativeQuery = true)
     List<EntryRepository.CategoryData> getCategoryDataByUserIdAndDateRange(
         @Param("userId") String userId,
-        @Param("type") EntryType type,
+        @Param("type") String type,
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate);
 
@@ -112,7 +112,7 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
            nativeQuery = true)
     List<EntryRepository.CategoryData> getCategoryDataByBookIdAndDateRange(
         @Param("bookId") Long bookId,
-        @Param("type") EntryType type,
+        @Param("type") String type,
         @Param("startDate") LocalDateTime startDate,
         @Param("endDate") LocalDateTime endDate);
 }

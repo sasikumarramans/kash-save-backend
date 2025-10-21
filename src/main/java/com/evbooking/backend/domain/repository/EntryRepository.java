@@ -39,10 +39,10 @@ public interface EntryRepository {
     BigDecimal getTotalIncomeByUserId(String userId);
 
     // Category-based aggregations for user
-    List<CategoryData> getCategoryDataByUserIdAndDateRange(String userId, EntryType type, LocalDateTime startDate, LocalDateTime endDate);
+    List<CategoryData> getCategoryDataByUserIdAndDateRange(String userId, String type, LocalDateTime startDate, LocalDateTime endDate);
 
     // Category-based aggregations for book
-    List<CategoryData> getCategoryDataByBookIdAndDateRange(Long bookId, EntryType type, LocalDateTime startDate, LocalDateTime endDate);
+    List<CategoryData> getCategoryDataByBookIdAndDateRange(Long bookId, String type, LocalDateTime startDate, LocalDateTime endDate);
 
     // Category data interface
     interface CategoryData {

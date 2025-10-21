@@ -141,12 +141,12 @@ public class ReportService {
         BigDecimal balance = totalIncome.subtract(totalExpense);
 
         List<CategorySummary> expenseCategories = buildCategorySummaries(
-            entryRepository.getCategoryDataByUserIdAndDateRange(userId, EntryType.EXPENSE, startDate, endDate),
+            entryRepository.getCategoryDataByUserIdAndDateRange(userId, EntryType.EXPENSE.name(), startDate, endDate),
             totalExpense
         );
 
         List<CategorySummary> incomeCategories = buildCategorySummaries(
-            entryRepository.getCategoryDataByUserIdAndDateRange(userId, EntryType.INCOME, startDate, endDate),
+            entryRepository.getCategoryDataByUserIdAndDateRange(userId, EntryType.INCOME.name(), startDate, endDate),
             totalIncome
         );
 
@@ -177,12 +177,12 @@ public class ReportService {
         BigDecimal balance = totalIncome.subtract(totalExpense);
 
         List<CategorySummary> expenseCategories = buildCategorySummaries(
-            entryRepository.getCategoryDataByBookIdAndDateRange(bookId, EntryType.EXPENSE, startDate, endDate),
+            entryRepository.getCategoryDataByBookIdAndDateRange(bookId, EntryType.EXPENSE.name(), startDate, endDate),
             totalExpense
         );
 
         List<CategorySummary> incomeCategories = buildCategorySummaries(
-            entryRepository.getCategoryDataByBookIdAndDateRange(bookId, EntryType.INCOME, startDate, endDate),
+            entryRepository.getCategoryDataByBookIdAndDateRange(bookId, EntryType.INCOME.name(), startDate, endDate),
             totalIncome
         );
 
