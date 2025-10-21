@@ -140,6 +140,226 @@ public class ReportController {
         }
     }
 
+    // Category-based summary report for user with time period parameter
+    @GetMapping("/user/summary")
+    public ResponseEntity<ApiResponse<CategoryReportResponse>> getUserCategorySummary(
+            @RequestParam String period,
+            HttpServletRequest httpRequest) {
+        try {
+            String userId = (String) httpRequest.getAttribute("userId");
+            if (userId == null) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("User not authenticated"));
+            }
+
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime startDate;
+
+            switch (period.toLowerCase()) {
+                case "this_month":
+                    startDate = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+                    break;
+                case "30_days":
+                    startDate = now.minusDays(30);
+                    break;
+                case "60_days":
+                    startDate = now.minusDays(60);
+                    break;
+                case "90_days":
+                    startDate = now.minusDays(90);
+                    break;
+                case "6_months":
+                    startDate = now.minusMonths(6);
+                    break;
+                default:
+                    return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Invalid period. Valid values: this_month, 30_days, 60_days, 90_days, 6_months"));
+            }
+
+            ReportService.CategoryReport report = reportService.getUserCategoryReport(userId, startDate, now, period);
+
+            CategoryReportResponse response = new CategoryReportResponse(
+                report.getTotalExpense(),
+                report.getTotalIncome(),
+                report.getBalance(),
+                report.getStartDate(),
+                report.getEndDate(),
+                report.getPeriod(),
+                report.getExpenseCategories(),
+                report.getIncomeCategories()
+            );
+
+            return ResponseEntity.ok(ApiResponse.success(response));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    // Category-based summary report for specific book with time period parameter
+    @GetMapping("/book/{bookId}/summary")
+    public ResponseEntity<ApiResponse<CategoryReportResponse>> getBookCategorySummary(
+            @PathVariable Long bookId,
+            @RequestParam String period,
+            HttpServletRequest httpRequest) {
+        try {
+            String userId = (String) httpRequest.getAttribute("userId");
+            if (userId == null) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("User not authenticated"));
+            }
+
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime startDate;
+
+            switch (period.toLowerCase()) {
+                case "this_month":
+                    startDate = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+                    break;
+                case "30_days":
+                    startDate = now.minusDays(30);
+                    break;
+                case "60_days":
+                    startDate = now.minusDays(60);
+                    break;
+                case "90_days":
+                    startDate = now.minusDays(90);
+                    break;
+                case "6_months":
+                    startDate = now.minusMonths(6);
+                    break;
+                default:
+                    return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Invalid period. Valid values: this_month, 30_days, 60_days, 90_days, 6_months"));
+            }
+
+            ReportService.CategoryReport report = reportService.getBookCategoryReport(bookId, userId, startDate, now, period);
+
+            CategoryReportResponse response = new CategoryReportResponse(
+                report.getTotalExpense(),
+                report.getTotalIncome(),
+                report.getBalance(),
+                report.getStartDate(),
+                report.getEndDate(),
+                report.getPeriod(),
+                report.getExpenseCategories(),
+                report.getIncomeCategories()
+            );
+
+            return ResponseEntity.ok(ApiResponse.success(response));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    // PDF download for user category summary
+    @GetMapping("/pdf-url/user/summary")
+    public ResponseEntity<ApiResponse<PdfDownloadResponse>> getUserSummaryPdfDownloadUrl(
+            @RequestParam String period,
+            HttpServletRequest httpRequest) {
+        try {
+            String userId = (String) httpRequest.getAttribute("userId");
+            if (userId == null) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("User not authenticated"));
+            }
+
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime startDate;
+
+            switch (period.toLowerCase()) {
+                case "this_month":
+                    startDate = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+                    break;
+                case "30_days":
+                    startDate = now.minusDays(30);
+                    break;
+                case "60_days":
+                    startDate = now.minusDays(60);
+                    break;
+                case "90_days":
+                    startDate = now.minusDays(90);
+                    break;
+                case "6_months":
+                    startDate = now.minusMonths(6);
+                    break;
+                default:
+                    return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Invalid period. Valid values: this_month, 30_days, 60_days, 90_days, 6_months"));
+            }
+
+            byte[] pdfBytes = pdfReportService.generateCategorySummaryReport(userId, startDate, now, period);
+            String fileName = "category_summary_" + period + ".pdf";
+
+            TempPdfStorageService.TempPdfInfo pdfInfo = tempPdfStorageService.storePdf(pdfBytes, fileName, userId);
+            String downloadUrl = "/reports/download/" + pdfInfo.getToken();
+
+            PdfDownloadResponse response = new PdfDownloadResponse(downloadUrl, fileName, pdfInfo.getExpiresAt());
+
+            return ResponseEntity.ok(ApiResponse.success(response));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    // PDF download for book category summary
+    @GetMapping("/pdf-url/book/{bookId}/summary")
+    public ResponseEntity<ApiResponse<PdfDownloadResponse>> getBookSummaryPdfDownloadUrl(
+            @PathVariable Long bookId,
+            @RequestParam String period,
+            HttpServletRequest httpRequest) {
+        try {
+            String userId = (String) httpRequest.getAttribute("userId");
+            if (userId == null) {
+                return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("User not authenticated"));
+            }
+
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime startDate;
+
+            switch (period.toLowerCase()) {
+                case "this_month":
+                    startDate = now.withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0).withNano(0);
+                    break;
+                case "30_days":
+                    startDate = now.minusDays(30);
+                    break;
+                case "60_days":
+                    startDate = now.minusDays(60);
+                    break;
+                case "90_days":
+                    startDate = now.minusDays(90);
+                    break;
+                case "6_months":
+                    startDate = now.minusMonths(6);
+                    break;
+                default:
+                    return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Invalid period. Valid values: this_month, 30_days, 60_days, 90_days, 6_months"));
+            }
+
+            byte[] pdfBytes = pdfReportService.generateBookCategorySummaryReport(bookId, userId, startDate, now, period);
+            String fileName = "book_" + bookId + "_summary_" + period + ".pdf";
+
+            TempPdfStorageService.TempPdfInfo pdfInfo = tempPdfStorageService.storePdf(pdfBytes, fileName, userId);
+            String downloadUrl = "/reports/download/" + pdfInfo.getToken();
+
+            PdfDownloadResponse response = new PdfDownloadResponse(downloadUrl, fileName, pdfInfo.getExpiresAt());
+
+            return ResponseEntity.ok(ApiResponse.success(response));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                .body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
     @GetMapping("/pdf-url/book/{bookId}")
     public ResponseEntity<ApiResponse<PdfDownloadResponse>> getBookPdfDownloadUrl(@PathVariable Long bookId, HttpServletRequest httpRequest) {
         try {

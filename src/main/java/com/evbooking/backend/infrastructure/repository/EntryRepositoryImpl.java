@@ -161,6 +161,16 @@ public class EntryRepositoryImpl implements EntryRepository {
         return new PageImpl<>(entries, pageable, entityPage.getTotalElements());
     }
 
+    @Override
+    public List<CategoryData> getCategoryDataByUserIdAndDateRange(String userId, EntryType type, LocalDateTime startDate, LocalDateTime endDate) {
+        return jpaEntryRepository.getCategoryDataByUserIdAndDateRange(userId, type, startDate, endDate);
+    }
+
+    @Override
+    public List<CategoryData> getCategoryDataByBookIdAndDateRange(Long bookId, EntryType type, LocalDateTime startDate, LocalDateTime endDate) {
+        return jpaEntryRepository.getCategoryDataByBookIdAndDateRange(bookId, type, startDate, endDate);
+    }
+
     private Entry toDomain(EntryEntity entity) {
         Entry entry = new Entry();
         entry.setId(entity.getId());

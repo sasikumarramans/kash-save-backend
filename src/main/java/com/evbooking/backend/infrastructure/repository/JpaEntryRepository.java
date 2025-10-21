@@ -1,6 +1,7 @@
 package com.evbooking.backend.infrastructure.repository;
 
 import com.evbooking.backend.domain.model.EntryType;
+import com.evbooking.backend.domain.repository.EntryRepository;
 import com.evbooking.backend.infrastructure.entity.EntryEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -87,4 +88,31 @@ public interface JpaEntryRepository extends JpaRepository<EntryEntity, Long> {
     BigDecimal getTotalAmountByUserIdAndType(
         @Param("userId") String userId,
         @Param("type") EntryType type);
+
+    // Category aggregations for user
+    @Query(value = "SELECT e.name AS name, SUM(e.amount) AS totalAmount, COUNT(e.id) AS count " +
+           "FROM entries e " +
+           "JOIN books b ON e.book_id = b.id " +
+           "WHERE b.user_id = :userId AND e.type = :type AND e.date_time BETWEEN :startDate AND :endDate " +
+           "GROUP BY e.name " +
+           "ORDER BY totalAmount DESC",
+           nativeQuery = true)
+    List<EntryRepository.CategoryData> getCategoryDataByUserIdAndDateRange(
+        @Param("userId") String userId,
+        @Param("type") EntryType type,
+        @Param("startDate") LocalDateTime startDate,
+        @Param("endDate") LocalDateTime endDate);
+
+    // Category aggregations for book
+    @Query(value = "SELECT e.name AS name, SUM(e.amount) AS totalAmount, COUNT(e.id) AS count " +
+           "FROM entries e " +
+           "WHERE e.book_id = :bookId AND e.type = :type AND e.date_time BETWEEN :startDate AND :endDate " +
+           "GROUP BY e.name " +
+           "ORDER BY totalAmount DESC",
+           nativeQuery = true)
+    List<EntryRepository.CategoryData> getCategoryDataByBookIdAndDateRange(
+        @Param("bookId") Long bookId,
+        @Param("type") EntryType type,
+        @Param("startDate") LocalDateTime startDate,
+        @Param("endDate") LocalDateTime endDate);
 }
