@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @RestController
 @RequestMapping("/reports")
@@ -144,6 +145,8 @@ public class ReportController {
     @GetMapping("/user/summary")
     public ResponseEntity<ApiResponse<CategoryReportResponse>> getUserCategorySummary(
             @RequestParam String period,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             HttpServletRequest httpRequest) {
         try {
             String userId = (String) httpRequest.getAttribute("userId");
@@ -178,6 +181,22 @@ public class ReportController {
 
             ReportService.CategoryReport report = reportService.getUserCategoryReport(userId, startDate, now, period);
 
+            // Apply pagination to expense categories
+            List<CategorySummary> expenseCategories = report.getExpenseCategories();
+            int expenseFromIndex = page * size;
+            int expenseToIndex = Math.min(expenseFromIndex + size, expenseCategories.size());
+            List<CategorySummary> pagedExpenseCategories = expenseFromIndex >= expenseCategories.size()
+                ? List.of()
+                : expenseCategories.subList(expenseFromIndex, expenseToIndex);
+
+            // Apply pagination to income categories
+            List<CategorySummary> incomeCategories = report.getIncomeCategories();
+            int incomeFromIndex = page * size;
+            int incomeToIndex = Math.min(incomeFromIndex + size, incomeCategories.size());
+            List<CategorySummary> pagedIncomeCategories = incomeFromIndex >= incomeCategories.size()
+                ? List.of()
+                : incomeCategories.subList(incomeFromIndex, incomeToIndex);
+
             CategoryReportResponse response = new CategoryReportResponse(
                 report.getTotalExpense(),
                 report.getTotalIncome(),
@@ -185,8 +204,8 @@ public class ReportController {
                 report.getStartDate(),
                 report.getEndDate(),
                 report.getPeriod(),
-                report.getExpenseCategories(),
-                report.getIncomeCategories()
+                pagedExpenseCategories,
+                pagedIncomeCategories
             );
 
             return ResponseEntity.ok(ApiResponse.success(response));
@@ -202,6 +221,8 @@ public class ReportController {
     public ResponseEntity<ApiResponse<CategoryReportResponse>> getBookCategorySummary(
             @PathVariable Long bookId,
             @RequestParam String period,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             HttpServletRequest httpRequest) {
         try {
             String userId = (String) httpRequest.getAttribute("userId");
@@ -236,6 +257,22 @@ public class ReportController {
 
             ReportService.CategoryReport report = reportService.getBookCategoryReport(bookId, userId, startDate, now, period);
 
+            // Apply pagination to expense categories
+            List<CategorySummary> expenseCategories = report.getExpenseCategories();
+            int expenseFromIndex = page * size;
+            int expenseToIndex = Math.min(expenseFromIndex + size, expenseCategories.size());
+            List<CategorySummary> pagedExpenseCategories = expenseFromIndex >= expenseCategories.size()
+                ? List.of()
+                : expenseCategories.subList(expenseFromIndex, expenseToIndex);
+
+            // Apply pagination to income categories
+            List<CategorySummary> incomeCategories = report.getIncomeCategories();
+            int incomeFromIndex = page * size;
+            int incomeToIndex = Math.min(incomeFromIndex + size, incomeCategories.size());
+            List<CategorySummary> pagedIncomeCategories = incomeFromIndex >= incomeCategories.size()
+                ? List.of()
+                : incomeCategories.subList(incomeFromIndex, incomeToIndex);
+
             CategoryReportResponse response = new CategoryReportResponse(
                 report.getTotalExpense(),
                 report.getTotalIncome(),
@@ -243,8 +280,8 @@ public class ReportController {
                 report.getStartDate(),
                 report.getEndDate(),
                 report.getPeriod(),
-                report.getExpenseCategories(),
-                report.getIncomeCategories()
+                pagedExpenseCategories,
+                pagedIncomeCategories
             );
 
             return ResponseEntity.ok(ApiResponse.success(response));
