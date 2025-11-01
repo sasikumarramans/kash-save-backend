@@ -4,6 +4,8 @@ import com.evbooking.backend.domain.model.split.SplitExpense;
 import com.evbooking.backend.domain.model.split.SplitParticipant;
 import com.evbooking.backend.domain.model.User;
 import com.evbooking.backend.domain.repository.UserRepository;
+import com.evbooking.backend.domain.repository.split.GroupRepository;
+import com.evbooking.backend.infrastructure.entity.split.GroupEntity;
 import com.evbooking.backend.presentation.dto.ApiResponse;
 import com.evbooking.backend.presentation.dto.split.*;
 import com.evbooking.backend.usecase.service.split.SplitExpenseService;
@@ -29,10 +31,12 @@ public class SplitExpenseController {
 
     private final SplitExpenseService splitExpenseService;
     private final UserRepository userRepository;
+    private final GroupRepository groupRepository;
 
-    public SplitExpenseController(SplitExpenseService splitExpenseService, UserRepository userRepository) {
+    public SplitExpenseController(SplitExpenseService splitExpenseService, UserRepository userRepository, GroupRepository groupRepository) {
         this.splitExpenseService = splitExpenseService;
         this.userRepository = userRepository;
+        this.groupRepository = groupRepository;
     }
 
     @PostMapping
@@ -73,7 +77,7 @@ public class SplitExpenseController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Page<SplitExpenseResponse>>> getUserSplitExpenses(
+    public ResponseEntity<ApiResponse<Page<SplitExpenseSummaryResponse>>> getUserSplitExpenses(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -98,7 +102,8 @@ public class SplitExpenseController {
                 expenses = splitExpenseService.getUserSplitExpenses(userId, pageable);
             }
 
-            Page<SplitExpenseResponse> response = expenses.map(this::convertToSplitExpenseResponse);
+            Page<SplitExpenseSummaryResponse> response = expenses.map(expense ->
+                convertToSplitExpenseSummaryResponse(expense, userId));
             return ResponseEntity.ok(ApiResponse.success(response));
 
         } catch (Exception e) {
@@ -160,9 +165,10 @@ public class SplitExpenseController {
      * 1. Direct group expenses (where groupId matches)
      * 2. Individual expenses between group members
      * This provides complete financial visibility within the group context
+     * Returns simplified summary for each expense with current user's share
      */
     @GetMapping("/groups/{groupId}")
-    public ResponseEntity<ApiResponse<Page<SplitExpenseResponse>>> getGroupSplitExpenses(
+    public ResponseEntity<ApiResponse<Page<SplitExpenseSummaryResponse>>> getGroupSplitExpenses(
             @PathVariable Long groupId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
@@ -181,7 +187,8 @@ public class SplitExpenseController {
             Pageable pageable = PageRequest.of(page, size, sort);
 
             Page<SplitExpense> expenses = splitExpenseService.getGroupSplitExpenses(groupId, userId, pageable);
-            Page<SplitExpenseResponse> response = expenses.map(this::convertToSplitExpenseResponse);
+            Page<SplitExpenseSummaryResponse> response = expenses.map(expense ->
+                convertToSplitExpenseSummaryResponse(expense, userId));
 
             return ResponseEntity.ok(ApiResponse.success(response));
 
@@ -282,6 +289,63 @@ public class SplitExpenseController {
         if (userOpt.isPresent()) {
             response.setUsername(userOpt.get().getUsername());
         }
+
+        return response;
+    }
+
+    /**
+     * Convert expense to simplified summary response for list views.
+     * Includes only essential info and current user's share.
+     *
+     * @param expense The expense to convert
+     * @param currentUserId The ID of the current user requesting the data
+     * @return Simplified expense summary
+     */
+    private SplitExpenseSummaryResponse convertToSplitExpenseSummaryResponse(SplitExpense expense, String currentUserId) {
+        SplitExpenseSummaryResponse response = new SplitExpenseSummaryResponse();
+        response.setExpenseId(expense.getId());
+        response.setDescription(expense.getDescription());
+        response.setTotalAmount(expense.getTotalAmount());
+        response.setCurrency(expense.getCurrency());
+        response.setPaidByUserId(expense.getPaidByUserId());
+        response.setGroupId(expense.getGroupId());
+        response.setCreatedAt(expense.getCreatedAt());
+
+        // Get paid by user details
+        Optional<User> paidByUserOpt = userRepository.findById(expense.getPaidByUserId());
+        if (paidByUserOpt.isPresent()) {
+            response.setPaidByUsername(paidByUserOpt.get().getUsername());
+        }
+
+        // Get group name if this is a group expense
+        if (expense.getGroupId() != null) {
+            Optional<GroupEntity> groupOpt = groupRepository.findById(expense.getGroupId());
+            if (groupOpt.isPresent()) {
+                response.setGroupName(groupOpt.get().getName());
+            }
+        }
+
+        // Get participants and calculate current user's amount
+        List<SplitParticipant> participants = splitExpenseService.getSplitParticipants(expense.getId(), currentUserId);
+        BigDecimal currentUserAmount = BigDecimal.ZERO;
+
+        for (SplitParticipant participant : participants) {
+            if (participant.getUserId().equals(currentUserId)) {
+                // Found current user's participation
+                if (expense.getPaidByUserId().equals(currentUserId)) {
+                    // User paid: they should receive (totalAmount - their share)
+                    // Represent as negative (they are owed money)
+                    currentUserAmount = expense.getTotalAmount().subtract(participant.getAmountOwed()).negate();
+                } else {
+                    // User didn't pay: they owe their share
+                    // Represent as positive (they owe money)
+                    currentUserAmount = participant.getAmountOwed();
+                }
+                break;
+            }
+        }
+
+        response.setCurrentUserAmount(currentUserAmount);
 
         return response;
     }

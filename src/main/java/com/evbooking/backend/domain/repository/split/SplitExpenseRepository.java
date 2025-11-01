@@ -41,6 +41,9 @@ public interface SplitExpenseRepository extends JpaRepository<SplitExpenseEntity
 
     Page<SplitExpenseEntity> findByGroupId(Long groupId, Pageable pageable);
 
+    @Query("SELECT se FROM SplitExpenseEntity se WHERE se.groupId = :groupId ORDER BY se.createdAt DESC")
+    List<SplitExpenseEntity> findByGroupId(@Param("groupId") Long groupId);
+
     List<SplitExpenseEntity> findByCreatedByUserId(String userId);
 
     List<SplitExpenseEntity> findByPaidByUserId(String userId);
