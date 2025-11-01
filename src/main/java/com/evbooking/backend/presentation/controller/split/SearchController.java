@@ -130,26 +130,25 @@ public class SearchController {
     }
 
     /**
-     * Get recently collaborated friends
+     * Get recently collaborated friends (from ANY expense - individual or group)
      */
     private List<SearchResultResponse.FriendSearchResult> getRecentFriends(String userId, int limit) {
-        // Get individual expenses where user is involved, ordered by most recent
+        // Get ALL expenses where user is involved, ordered by most recent
         var expenseEntities = splitExpenseRepository.findExpensesByParticipantUserId(userId);
-        List<SplitExpense> individualExpenses = expenseEntities.stream()
+        List<SplitExpense> allExpenses = expenseEntities.stream()
             .map(splitExpenseMapper::toDomain)
-            .filter(expense -> expense.getGroupId() == null)
             .sorted((e1, e2) -> e2.getCreatedAt().compareTo(e1.getCreatedAt()))
             .collect(Collectors.toList());
 
         // Track friends and their last collaboration
         Map<String, LocalDateTime> friendActivity = new LinkedHashMap<>();
 
-        for (SplitExpense expense : individualExpenses) {
+        for (SplitExpense expense : allExpenses) {
             var participantEntities = splitParticipantRepository.findBySplitExpenseId(expense.getId());
             for (var pEntity : participantEntities) {
                 SplitParticipant participant = splitParticipantMapper.toDomain(pEntity);
                 if (!participant.getUserId().equals(userId)) {
-                    // This is a friend
+                    // This is a friend (anyone who shared an expense with current user)
                     friendActivity.putIfAbsent(participant.getUserId(), expense.getCreatedAt());
                 }
             }
@@ -195,9 +194,25 @@ public class SearchController {
         List<SearchResultResponse.GroupSearchResult> results = new ArrayList<>();
 
         for (GroupEntity groupEntity : groupEntities) {
-            // Get member count
+            // Get members
             var memberEntities = groupMemberRepository.findByGroupId(groupEntity.getId());
-            int memberCount = memberEntities.size();
+
+            // Build participant list
+            List<SearchResultResponse.GroupMemberInfo> participants = new ArrayList<>();
+            for (var memberEntity : memberEntities) {
+                Optional<User> memberUserOpt = userRepository.findById(memberEntity.getUserId());
+                if (memberUserOpt.isPresent()) {
+                    User memberUser = memberUserOpt.get();
+                    String fullName = (memberUser.getFirstName() != null ? memberUser.getFirstName() : "") +
+                                     (memberUser.getLastName() != null ? " " + memberUser.getLastName() : "");
+                    participants.add(new SearchResultResponse.GroupMemberInfo(
+                        memberUser.getId(),
+                        memberUser.getUsername(),
+                        fullName.trim(),
+                        memberEntity.isAdmin()
+                    ));
+                }
+            }
 
             // Get latest expense for this group
             var groupExpenses = splitExpenseRepository.findByGroupId(groupEntity.getId());
@@ -208,7 +223,8 @@ public class SearchController {
                 groupEntity.getId(),
                 groupEntity.getName(),
                 groupEntity.getDescription(),
-                memberCount,
+                memberEntities.size(),
+                participants,
                 lastActivity
             ));
         }
@@ -217,19 +233,18 @@ public class SearchController {
     }
 
     /**
-     * Search friends by username or name
+     * Search friends by username or name (from ANY expense - individual or group)
      */
     private List<SearchResultResponse.FriendSearchResult> searchFriends(String userId, String query, int limit) {
-        // Get all users who have shared expenses with current user
+        // Get ALL users who have shared expenses with current user (individual or group)
         var expenseEntities = splitExpenseRepository.findExpensesByParticipantUserId(userId);
-        List<SplitExpense> individualExpenses = expenseEntities.stream()
+        List<SplitExpense> allExpenses = expenseEntities.stream()
             .map(splitExpenseMapper::toDomain)
-            .filter(expense -> expense.getGroupId() == null)
             .collect(Collectors.toList());
 
         // Collect all friend IDs
         Set<String> friendIds = new HashSet<>();
-        for (SplitExpense expense : individualExpenses) {
+        for (SplitExpense expense : allExpenses) {
             var participantEntities = splitParticipantRepository.findBySplitExpenseId(expense.getId());
             for (var pEntity : participantEntities) {
                 SplitParticipant participant = splitParticipantMapper.toDomain(pEntity);
@@ -271,7 +286,7 @@ public class SearchController {
     }
 
     /**
-     * Search groups by name
+     * Search groups by name, description, or member name
      */
     private List<SearchResultResponse.GroupSearchResult> searchGroups(String userId, String query, int limit) {
         // Get all user's groups
@@ -282,12 +297,39 @@ public class SearchController {
         List<SearchResultResponse.GroupSearchResult> results = new ArrayList<>();
 
         for (GroupEntity groupEntity : groupEntities) {
-            if (groupEntity.getName().toLowerCase().contains(lowerQuery) ||
-                (groupEntity.getDescription() != null && groupEntity.getDescription().toLowerCase().contains(lowerQuery))) {
+            // Get members
+            var memberEntities = groupMemberRepository.findByGroupId(groupEntity.getId());
 
-                // Get member count
-                var memberEntities = groupMemberRepository.findByGroupId(groupEntity.getId());
-                int memberCount = memberEntities.size();
+            // Build participant list
+            List<SearchResultResponse.GroupMemberInfo> participants = new ArrayList<>();
+            boolean memberNameMatches = false;
+
+            for (var memberEntity : memberEntities) {
+                Optional<User> memberUserOpt = userRepository.findById(memberEntity.getUserId());
+                if (memberUserOpt.isPresent()) {
+                    User memberUser = memberUserOpt.get();
+                    String fullName = (memberUser.getFirstName() != null ? memberUser.getFirstName() : "") +
+                                     (memberUser.getLastName() != null ? " " + memberUser.getLastName() : "");
+
+                    // Check if this member's name matches the query
+                    if (memberUser.getUsername().toLowerCase().contains(lowerQuery) ||
+                        fullName.toLowerCase().contains(lowerQuery)) {
+                        memberNameMatches = true;
+                    }
+
+                    participants.add(new SearchResultResponse.GroupMemberInfo(
+                        memberUser.getId(),
+                        memberUser.getUsername(),
+                        fullName.trim(),
+                        memberEntity.isAdmin()
+                    ));
+                }
+            }
+
+            // Match by group name, description, OR member name
+            if (groupEntity.getName().toLowerCase().contains(lowerQuery) ||
+                (groupEntity.getDescription() != null && groupEntity.getDescription().toLowerCase().contains(lowerQuery)) ||
+                memberNameMatches) {
 
                 // Get latest expense for this group
                 var groupExpenses = splitExpenseRepository.findByGroupId(groupEntity.getId());
@@ -298,7 +340,8 @@ public class SearchController {
                     groupEntity.getId(),
                     groupEntity.getName(),
                     groupEntity.getDescription(),
-                    memberCount,
+                    memberEntities.size(),
+                    participants,
                     lastActivity
                 ));
             }

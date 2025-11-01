@@ -123,16 +123,18 @@ public class SearchResultResponse {
         private String groupName;
         private String description;
         private int memberCount;
+        private List<GroupMemberInfo> participants;
         private String lastActivity; // Description of last expense
 
         public GroupSearchResult() {}
 
         public GroupSearchResult(Long groupId, String groupName, String description,
-                                int memberCount, String lastActivity) {
+                                int memberCount, List<GroupMemberInfo> participants, String lastActivity) {
             this.groupId = groupId;
             this.groupName = groupName;
             this.description = description;
             this.memberCount = memberCount;
+            this.participants = participants;
             this.lastActivity = lastActivity;
         }
 
@@ -168,12 +170,71 @@ public class SearchResultResponse {
             this.memberCount = memberCount;
         }
 
+        public List<GroupMemberInfo> getParticipants() {
+            return participants;
+        }
+
+        public void setParticipants(List<GroupMemberInfo> participants) {
+            this.participants = participants;
+        }
+
         public String getLastActivity() {
             return lastActivity;
         }
 
         public void setLastActivity(String lastActivity) {
             this.lastActivity = lastActivity;
+        }
+    }
+
+    /**
+     * Group member info for search results
+     */
+    public static class GroupMemberInfo {
+        private String userId;
+        private String username;
+        private String name;
+        private boolean isAdmin;
+
+        public GroupMemberInfo() {}
+
+        public GroupMemberInfo(String userId, String username, String name, boolean isAdmin) {
+            this.userId = userId;
+            this.username = username;
+            this.name = name;
+            this.isAdmin = isAdmin;
+        }
+
+        public String getUserId() {
+            return userId;
+        }
+
+        public void setUserId(String userId) {
+            this.userId = userId;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public void setUsername(String username) {
+            this.username = username;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public boolean isAdmin() {
+            return isAdmin;
+        }
+
+        public void setAdmin(boolean admin) {
+            isAdmin = admin;
         }
     }
 }
