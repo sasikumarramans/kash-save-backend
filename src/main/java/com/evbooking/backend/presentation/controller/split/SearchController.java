@@ -233,49 +233,34 @@ public class SearchController {
     }
 
     /**
-     * Search friends by username or name (from ANY expense - individual or group)
+     * Search friends by username or name (searches ALL users in the system)
      */
     private List<SearchResultResponse.FriendSearchResult> searchFriends(String userId, String query, int limit) {
-        // Get ALL users who have shared expenses with current user (individual or group)
-        var expenseEntities = splitExpenseRepository.findExpensesByParticipantUserId(userId);
-        List<SplitExpense> allExpenses = expenseEntities.stream()
-            .map(splitExpenseMapper::toDomain)
-            .collect(Collectors.toList());
-
-        // Collect all friend IDs
-        Set<String> friendIds = new HashSet<>();
-        for (SplitExpense expense : allExpenses) {
-            var participantEntities = splitParticipantRepository.findBySplitExpenseId(expense.getId());
-            for (var pEntity : participantEntities) {
-                SplitParticipant participant = splitParticipantMapper.toDomain(pEntity);
-                if (!participant.getUserId().equals(userId)) {
-                    friendIds.add(participant.getUserId());
-                }
-            }
-        }
-
-        // Search among friends by username or name
-        String lowerQuery = query.toLowerCase();
         List<SearchResultResponse.FriendSearchResult> results = new ArrayList<>();
 
-        for (String friendId : friendIds) {
-            Optional<User> userOpt = userRepository.findById(friendId);
-            if (userOpt.isPresent()) {
-                User friend = userOpt.get();
-                String fullName = (friend.getFirstName() != null ? friend.getFirstName() : "") +
-                                 (friend.getLastName() != null ? " " + friend.getLastName() : "");
-                if (friend.getUsername().toLowerCase().contains(lowerQuery) ||
-                    fullName.toLowerCase().contains(lowerQuery) ||
-                    (friend.getEmail() != null && friend.getEmail().toLowerCase().contains(lowerQuery))) {
-                    results.add(new SearchResultResponse.FriendSearchResult(
-                        friend.getId(),
-                        friend.getUsername(),
-                        fullName.trim(),
-                        friend.getEmail(),
-                        "Expense collaborator"
-                    ));
-                }
+        // Search ALL users in the system using the repository's search method
+        List<User> matchingUsers = userRepository.searchUsers(query);
+
+        for (User user : matchingUsers) {
+            // Skip current user
+            if (user.getId().equals(userId)) {
+                continue;
             }
+
+            String fullName = (user.getFirstName() != null ? user.getFirstName() : "") +
+                             (user.getLastName() != null ? " " + user.getLastName() : "");
+
+            // Determine activity status
+            String activityStatus = hasSharedExpense(userId, user.getId()) ?
+                "Expense collaborator" : "Available user";
+
+            results.add(new SearchResultResponse.FriendSearchResult(
+                user.getId(),
+                user.getUsername(),
+                fullName.trim(),
+                user.getEmail(),
+                activityStatus
+            ));
 
             if (results.size() >= limit) {
                 break;
@@ -283,6 +268,24 @@ public class SearchController {
         }
 
         return results;
+    }
+
+    /**
+     * Check if two users have shared any expense
+     */
+    private boolean hasSharedExpense(String userId1, String userId2) {
+        var expenseEntities = splitExpenseRepository.findExpensesByParticipantUserId(userId1);
+
+        for (var expenseEntity : expenseEntities) {
+            var participantEntities = splitParticipantRepository.findBySplitExpenseId(expenseEntity.getId());
+            for (var participantEntity : participantEntities) {
+                if (participantEntity.getUserId().equals(userId2)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
