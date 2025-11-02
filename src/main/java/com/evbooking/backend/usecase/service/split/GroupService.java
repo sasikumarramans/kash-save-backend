@@ -378,8 +378,8 @@ public class GroupService {
             // Calculate balance for this group
             BalanceData balanceData = calculateGroupBalance(group.getId(), userId);
 
-            // Get recent expenses (last 2)
-            List<RecentExpenseResponse> recentExpenses = getRecentExpensesForGroup(group.getId(), 2);
+            // Get recent expenses (last 2) with user-specific status and amount
+            List<RecentExpenseResponse> recentExpenses = getRecentExpensesForGroup(group.getId(), userId, 2);
 
             GroupResponse response = new GroupResponse(
                 group.getId(),
@@ -410,6 +410,7 @@ public class GroupService {
 
     /**
      * Calculate balance data for a group from the perspective of the given user
+     * Logic matches the friends API: if you paid 1000 and your share is 500, you receive 500
      */
     private BalanceData calculateGroupBalance(Long groupId, String userId) {
         // Get all expenses for this group
@@ -426,25 +427,21 @@ public class GroupService {
                 .map(splitParticipantMapper::toDomain)
                 .collect(Collectors.toList());
 
-            Optional<SplitParticipant> userParticipant = participants.stream()
+            // Find current user's participation
+            Optional<SplitParticipant> userParticipantOpt = participants.stream()
                 .filter(p -> p.getUserId().equals(userId))
                 .findFirst();
 
-            if (userParticipant.isPresent()) {
-                SplitParticipant myParticipation = userParticipant.get();
+            if (userParticipantOpt.isPresent()) {
+                SplitParticipant userParticipant = userParticipantOpt.get();
 
-                if (!myParticipation.isSettled()) {
-                    if (expense.getPaidByUserId().equals(userId)) {
-                        // I paid, others owe me
-                        BigDecimal othersOweMe = participants.stream()
-                            .filter(p -> !p.getUserId().equals(userId) && !p.isSettled())
-                            .map(SplitParticipant::getAmountOwed)
-                            .reduce(BigDecimal.ZERO, BigDecimal::add);
-                        balanceData.addOwesYou(othersOweMe);
-                    } else {
-                        // Someone else paid, I owe them
-                        balanceData.addYouOwe(myParticipation.getAmountOwed());
-                    }
+                if (expense.getPaidByUserId().equals(userId)) {
+                    // Current user paid: they should receive (total - their share)
+                    BigDecimal amountToReceive = expense.getTotalAmount().subtract(userParticipant.getAmountOwed());
+                    balanceData.addOwesYou(amountToReceive);
+                } else {
+                    // Current user didn't pay: they owe their share
+                    balanceData.addYouOwe(userParticipant.getAmountOwed());
                 }
             }
         }
@@ -453,9 +450,10 @@ public class GroupService {
     }
 
     /**
-     * Get the N most recent expenses for a group
+     * Get the N most recent expenses for a group with status and amount from user's perspective
+     * Logic matches the friends API implementation
      */
-    private List<RecentExpenseResponse> getRecentExpensesForGroup(Long groupId, int limit) {
+    private List<RecentExpenseResponse> getRecentExpensesForGroup(Long groupId, String userId, int limit) {
         // Get recent expenses ordered by created date desc
         var expenseEntities = splitExpenseRepository.findByGroupId(groupId);
 
@@ -468,6 +466,29 @@ public class GroupService {
                 Optional<User> paidByUser = userRepository.findById(expense.getPaidByUserId());
                 String paidByUsername = paidByUser.map(User::getUsername).orElse("Unknown");
 
+                // Calculate status and yourAmount from current user's perspective
+                BigDecimal yourAmount = BigDecimal.ZERO;
+                String status = "";
+
+                var participantEntities = splitParticipantRepository.findBySplitExpenseId(expense.getId());
+                for (var pEntity : participantEntities) {
+                    SplitParticipant participant = splitParticipantMapper.toDomain(pEntity);
+
+                    if (participant.getUserId().equals(userId)) {
+                        // Calculate what current user owes or receives
+                        if (expense.getPaidByUserId().equals(userId)) {
+                            // Current user paid: they should receive (total - their share)
+                            yourAmount = expense.getTotalAmount().subtract(participant.getAmountOwed());
+                            status = "You receive";
+                        } else {
+                            // Current user didn't pay: they owe their share
+                            yourAmount = participant.getAmountOwed();
+                            status = "You pay";
+                        }
+                        break;
+                    }
+                }
+
                 return new RecentExpenseResponse(
                     expense.getId(),
                     expense.getDescription(),
@@ -475,6 +496,8 @@ public class GroupService {
                     expense.getCurrency(),
                     paidByUsername,
                     expense.getPaidByUserId(),
+                    yourAmount,
+                    status,
                     expense.getCreatedAt()
                 );
             })

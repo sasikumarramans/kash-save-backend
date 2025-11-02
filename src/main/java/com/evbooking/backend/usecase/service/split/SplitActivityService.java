@@ -372,6 +372,7 @@ public class SplitActivityService {
 
     /**
      * Calculate balance data for a group from the perspective of the given user
+     * Logic matches the friends API: if you paid 1000 and your share is 500, you receive 500
      */
     private BalanceData calculateGroupBalance(Long groupId, String userId) {
         // Get all expenses for this group
@@ -388,25 +389,21 @@ public class SplitActivityService {
                 .map(splitParticipantMapper::toDomain)
                 .collect(Collectors.toList());
 
-            Optional<SplitParticipant> userParticipant = participants.stream()
+            // Find current user's participation
+            Optional<SplitParticipant> userParticipantOpt = participants.stream()
                 .filter(p -> p.getUserId().equals(userId))
                 .findFirst();
 
-            if (userParticipant.isPresent()) {
-                SplitParticipant myParticipation = userParticipant.get();
+            if (userParticipantOpt.isPresent()) {
+                SplitParticipant userParticipant = userParticipantOpt.get();
 
-                if (!myParticipation.isSettled()) {
-                    if (expense.getPaidByUserId().equals(userId)) {
-                        // I paid, others owe me
-                        BigDecimal othersOweMe = participants.stream()
-                            .filter(p -> !p.getUserId().equals(userId) && !p.isSettled())
-                            .map(SplitParticipant::getAmountOwed)
-                            .reduce(BigDecimal.ZERO, BigDecimal::add);
-                        balanceData.addOwesYou(othersOweMe);
-                    } else {
-                        // Someone else paid, I owe them
-                        balanceData.addYouOwe(myParticipation.getAmountOwed());
-                    }
+                if (expense.getPaidByUserId().equals(userId)) {
+                    // Current user paid: they should receive (total - their share)
+                    BigDecimal amountToReceive = expense.getTotalAmount().subtract(userParticipant.getAmountOwed());
+                    balanceData.addOwesYou(amountToReceive);
+                } else {
+                    // Current user didn't pay: they owe their share
+                    balanceData.addYouOwe(userParticipant.getAmountOwed());
                 }
             }
         }

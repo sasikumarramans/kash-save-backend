@@ -12,6 +12,8 @@ public class RecentExpenseResponse {
     private String currency;
     private String paidByUsername;
     private String paidByUserId;
+    private BigDecimal yourAmount; // Amount you pay or receive for this expense
+    private String status; // "You pay" or "You receive"
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
@@ -19,13 +21,16 @@ public class RecentExpenseResponse {
     public RecentExpenseResponse() {}
 
     public RecentExpenseResponse(Long id, String description, BigDecimal totalAmount, String currency,
-                                String paidByUsername, String paidByUserId, LocalDateTime createdAt) {
+                                String paidByUsername, String paidByUserId, BigDecimal yourAmount,
+                                String status, LocalDateTime createdAt) {
         this.id = id;
         this.description = description;
         this.totalAmount = totalAmount;
         this.currency = currency;
         this.paidByUsername = paidByUsername;
         this.paidByUserId = paidByUserId;
+        this.yourAmount = yourAmount;
+        this.status = status;
         this.createdAt = createdAt;
     }
 
@@ -46,6 +51,12 @@ public class RecentExpenseResponse {
 
     public String getPaidByUserId() { return paidByUserId; }
     public void setPaidByUserId(String paidByUserId) { this.paidByUserId = paidByUserId; }
+
+    public BigDecimal getYourAmount() { return yourAmount; }
+    public void setYourAmount(BigDecimal yourAmount) { this.yourAmount = yourAmount; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
