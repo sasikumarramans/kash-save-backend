@@ -107,6 +107,8 @@ public class SplitActivityResponse {
         private String expenseDescription;
         private BigDecimal amount;
         private String currency;
+        private BigDecimal overallPayingAmount;
+        private BigDecimal overallReceivingAmount;
 
         public ActivityContext() {}
 
@@ -127,5 +129,11 @@ public class SplitActivityResponse {
 
         public String getCurrency() { return currency; }
         public void setCurrency(String currency) { this.currency = currency; }
+
+        public BigDecimal getOverallPayingAmount() { return overallPayingAmount; }
+        public void setOverallPayingAmount(BigDecimal overallPayingAmount) { this.overallPayingAmount = overallPayingAmount; }
+
+        public BigDecimal getOverallReceivingAmount() { return overallReceivingAmount; }
+        public void setOverallReceivingAmount(BigDecimal overallReceivingAmount) { this.overallReceivingAmount = overallReceivingAmount; }
     }
 }

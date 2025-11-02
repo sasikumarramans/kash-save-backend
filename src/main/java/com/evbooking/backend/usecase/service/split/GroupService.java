@@ -3,16 +3,22 @@ package com.evbooking.backend.usecase.service.split;
 import com.evbooking.backend.domain.model.split.Group;
 import com.evbooking.backend.domain.model.split.GroupMember;
 import com.evbooking.backend.domain.model.split.GroupDeletionHistory;
+import com.evbooking.backend.domain.model.split.SplitExpense;
+import com.evbooking.backend.domain.model.split.SplitParticipant;
 import com.evbooking.backend.domain.model.User;
 import com.evbooking.backend.domain.repository.split.GroupRepository;
 import com.evbooking.backend.domain.repository.split.GroupMemberRepository;
 import com.evbooking.backend.domain.repository.split.GroupDeletionHistoryRepository;
 import com.evbooking.backend.domain.repository.split.SplitExpenseRepository;
+import com.evbooking.backend.domain.repository.split.SplitParticipantRepository;
 import com.evbooking.backend.domain.repository.UserRepository;
 import com.evbooking.backend.infrastructure.mapper.split.GroupMapper;
 import com.evbooking.backend.infrastructure.mapper.split.GroupMemberMapper;
 import com.evbooking.backend.infrastructure.mapper.split.GroupDeletionHistoryMapper;
+import com.evbooking.backend.infrastructure.mapper.split.SplitExpenseMapper;
+import com.evbooking.backend.infrastructure.mapper.split.SplitParticipantMapper;
 import com.evbooking.backend.presentation.dto.split.GroupResponse;
+import com.evbooking.backend.presentation.dto.split.RecentExpenseResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -20,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,27 +41,35 @@ public class GroupService {
     private final GroupMemberRepository groupMemberRepository;
     private final GroupDeletionHistoryRepository groupDeletionHistoryRepository;
     private final SplitExpenseRepository splitExpenseRepository;
+    private final SplitParticipantRepository splitParticipantRepository;
     private final UserRepository userRepository;
     private final SplitActivityService splitActivityService;
     private final GroupMapper groupMapper;
     private final GroupMemberMapper groupMemberMapper;
     private final GroupDeletionHistoryMapper groupDeletionHistoryMapper;
+    private final SplitExpenseMapper splitExpenseMapper;
+    private final SplitParticipantMapper splitParticipantMapper;
 
     public GroupService(GroupRepository groupRepository, GroupMemberRepository groupMemberRepository,
                        GroupDeletionHistoryRepository groupDeletionHistoryRepository,
                        SplitExpenseRepository splitExpenseRepository,
+                       SplitParticipantRepository splitParticipantRepository,
                        UserRepository userRepository,
                        SplitActivityService splitActivityService, GroupMapper groupMapper,
-                       GroupMemberMapper groupMemberMapper, GroupDeletionHistoryMapper groupDeletionHistoryMapper) {
+                       GroupMemberMapper groupMemberMapper, GroupDeletionHistoryMapper groupDeletionHistoryMapper,
+                       SplitExpenseMapper splitExpenseMapper, SplitParticipantMapper splitParticipantMapper) {
         this.groupRepository = groupRepository;
         this.groupMemberRepository = groupMemberRepository;
         this.groupDeletionHistoryRepository = groupDeletionHistoryRepository;
         this.splitExpenseRepository = splitExpenseRepository;
+        this.splitParticipantRepository = splitParticipantRepository;
         this.userRepository = userRepository;
         this.splitActivityService = splitActivityService;
         this.groupMapper = groupMapper;
         this.groupMemberMapper = groupMemberMapper;
         this.groupDeletionHistoryMapper = groupDeletionHistoryMapper;
+        this.splitExpenseMapper = splitExpenseMapper;
+        this.splitParticipantMapper = splitParticipantMapper;
     }
 
     public Group createGroup(String name, String description, String currency, List<String> memberUsernames, String adminUserId) {
@@ -360,6 +375,12 @@ public class GroupService {
             // Get member count
             long memberCount = groupMemberRepository.countByGroupId(group.getId());
 
+            // Calculate balance for this group
+            BalanceData balanceData = calculateGroupBalance(group.getId(), userId);
+
+            // Get recent expenses (last 2)
+            List<RecentExpenseResponse> recentExpenses = getRecentExpensesForGroup(group.getId(), 2);
+
             GroupResponse response = new GroupResponse(
                 group.getId(),
                 "group", // Type: group (real group)
@@ -372,6 +393,12 @@ public class GroupService {
                 null, // Members list will be populated separately if needed
                 group.getCreatedAt()
             );
+
+            // Set the new fields
+            response.setOverallReceivingAmount(balanceData.getOwesYou());
+            response.setOverallPayingAmount(balanceData.getYouOwe());
+            response.setRecentExpenses(recentExpenses);
+
             allGroups.add(response);
         });
 
@@ -379,5 +406,92 @@ public class GroupService {
         long totalElements = groupsPage.getTotalElements() + (nonGroupExpenseCount > 0 ? 1 : 0);
 
         return new PageImpl<>(allGroups, pageable, totalElements);
+    }
+
+    /**
+     * Calculate balance data for a group from the perspective of the given user
+     */
+    private BalanceData calculateGroupBalance(Long groupId, String userId) {
+        // Get all expenses for this group
+        var groupExpenseEntities = splitExpenseRepository.findByGroupId(groupId);
+        List<SplitExpense> groupExpenses = groupExpenseEntities.stream()
+            .map(splitExpenseMapper::toDomain)
+            .collect(Collectors.toList());
+
+        BalanceData balanceData = new BalanceData();
+
+        for (SplitExpense expense : groupExpenses) {
+            var participantEntities = splitParticipantRepository.findBySplitExpenseId(expense.getId());
+            List<SplitParticipant> participants = participantEntities.stream()
+                .map(splitParticipantMapper::toDomain)
+                .collect(Collectors.toList());
+
+            Optional<SplitParticipant> userParticipant = participants.stream()
+                .filter(p -> p.getUserId().equals(userId))
+                .findFirst();
+
+            if (userParticipant.isPresent()) {
+                SplitParticipant myParticipation = userParticipant.get();
+
+                if (!myParticipation.isSettled()) {
+                    if (expense.getPaidByUserId().equals(userId)) {
+                        // I paid, others owe me
+                        BigDecimal othersOweMe = participants.stream()
+                            .filter(p -> !p.getUserId().equals(userId) && !p.isSettled())
+                            .map(SplitParticipant::getAmountOwed)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                        balanceData.addOwesYou(othersOweMe);
+                    } else {
+                        // Someone else paid, I owe them
+                        balanceData.addYouOwe(myParticipation.getAmountOwed());
+                    }
+                }
+            }
+        }
+
+        return balanceData;
+    }
+
+    /**
+     * Get the N most recent expenses for a group
+     */
+    private List<RecentExpenseResponse> getRecentExpensesForGroup(Long groupId, int limit) {
+        // Get recent expenses ordered by created date desc
+        var expenseEntities = splitExpenseRepository.findByGroupId(groupId);
+
+        return expenseEntities.stream()
+            .map(splitExpenseMapper::toDomain)
+            .sorted((e1, e2) -> e2.getCreatedAt().compareTo(e1.getCreatedAt())) // Sort by created date DESC
+            .limit(limit)
+            .map(expense -> {
+                // Get user who paid for this expense
+                Optional<User> paidByUser = userRepository.findById(expense.getPaidByUserId());
+                String paidByUsername = paidByUser.map(User::getUsername).orElse("Unknown");
+
+                return new RecentExpenseResponse(
+                    expense.getId(),
+                    expense.getDescription(),
+                    expense.getTotalAmount(),
+                    expense.getCurrency(),
+                    paidByUsername,
+                    expense.getPaidByUserId(),
+                    expense.getCreatedAt()
+                );
+            })
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Helper class to track balance data for a group
+     */
+    private static class BalanceData {
+        private BigDecimal youOwe = BigDecimal.ZERO;
+        private BigDecimal owesYou = BigDecimal.ZERO;
+
+        public BigDecimal getYouOwe() { return youOwe; }
+        public BigDecimal getOwesYou() { return owesYou; }
+
+        public void addYouOwe(BigDecimal amount) { this.youOwe = this.youOwe.add(amount); }
+        public void addOwesYou(BigDecimal amount) { this.owesYou = this.owesYou.add(amount); }
     }
 }

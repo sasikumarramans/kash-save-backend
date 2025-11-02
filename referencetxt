@@ -35,3 +35,6 @@ run locally
 
 db connection
 docker exec -it kash-save-staging-postgres psql -U kash_staging_user -d kash_save_staging_db
+
+# Clear the Nginx error state
+systemctl restart nginx

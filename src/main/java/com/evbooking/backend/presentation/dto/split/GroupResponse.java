@@ -2,6 +2,7 @@ package com.evbooking.backend.presentation.dto.split;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -15,6 +16,9 @@ public class GroupResponse {
     private String adminUsername;
     private int memberCount;
     private List<GroupMemberResponse> members;
+    private BigDecimal overallReceivingAmount;
+    private BigDecimal overallPayingAmount;
+    private List<RecentExpenseResponse> recentExpenses;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime createdAt;
@@ -62,6 +66,15 @@ public class GroupResponse {
 
     public List<GroupMemberResponse> getMembers() { return members; }
     public void setMembers(List<GroupMemberResponse> members) { this.members = members; }
+
+    public BigDecimal getOverallReceivingAmount() { return overallReceivingAmount; }
+    public void setOverallReceivingAmount(BigDecimal overallReceivingAmount) { this.overallReceivingAmount = overallReceivingAmount; }
+
+    public BigDecimal getOverallPayingAmount() { return overallPayingAmount; }
+    public void setOverallPayingAmount(BigDecimal overallPayingAmount) { this.overallPayingAmount = overallPayingAmount; }
+
+    public List<RecentExpenseResponse> getRecentExpenses() { return recentExpenses; }
+    public void setRecentExpenses(List<RecentExpenseResponse> recentExpenses) { this.recentExpenses = recentExpenses; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

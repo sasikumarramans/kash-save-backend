@@ -25,30 +25,36 @@ public class SplitActivityService {
     private final UserRepository userRepository;
     private final GroupRepository groupRepository;
     private final SplitExpenseRepository splitExpenseRepository;
+    private final SplitParticipantRepository splitParticipantRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final ObjectMapper objectMapper;
     private final GroupMapper groupMapper;
     private final SplitExpenseMapper splitExpenseMapper;
+    private final SplitParticipantMapper splitParticipantMapper;
     private final GroupMemberMapper groupMemberMapper;
     private final SplitActivityMapper splitActivityMapper;
     public SplitActivityService(SplitActivityRepository splitActivityRepository,
                                UserRepository userRepository,
                                GroupRepository groupRepository,
                                SplitExpenseRepository splitExpenseRepository,
+                               SplitParticipantRepository splitParticipantRepository,
                                GroupMemberRepository groupMemberRepository,
                                ObjectMapper objectMapper,
                                GroupMapper groupMapper,
                                SplitExpenseMapper splitExpenseMapper,
+                               SplitParticipantMapper splitParticipantMapper,
                                GroupMemberMapper groupMemberMapper,
                                SplitActivityMapper splitActivityMapper) {
         this.splitActivityRepository = splitActivityRepository;
         this.userRepository = userRepository;
         this.groupRepository = groupRepository;
         this.splitExpenseRepository = splitExpenseRepository;
+        this.splitParticipantRepository = splitParticipantRepository;
         this.groupMemberRepository = groupMemberRepository;
         this.objectMapper = objectMapper;
         this.groupMapper = groupMapper;
         this.splitExpenseMapper = splitExpenseMapper;
+        this.splitParticipantMapper = splitParticipantMapper;
         this.groupMemberMapper = groupMemberMapper;
         this.splitActivityMapper = splitActivityMapper;
     }
@@ -249,7 +255,7 @@ public class SplitActivityService {
             activities = splitActivityRepository.findActivitiesForUser(userId, pageable).map(splitActivityMapper::toDomain);
         }
 
-        return activities.map(this::convertToActivityResponse);
+        return activities.map(activity -> convertToActivityResponse(activity, userId));
     }
 
     public Page<SplitActivityResponse> getGroupActivities(Long groupId, String userId, Pageable pageable) {
@@ -259,19 +265,19 @@ public class SplitActivityService {
         }
 
         Page<SplitActivity> activities = splitActivityRepository.findByGroupIdAndUser(groupId, userId, pageable).map(splitActivityMapper::toDomain);
-        return activities.map(this::convertToActivityResponse);
+        return activities.map(activity -> convertToActivityResponse(activity, userId));
     }
 
     public Page<SplitActivityResponse> getFriendActivities(String userId, String friendId, Pageable pageable) {
         Page<SplitActivity> activities = splitActivityRepository.findFriendActivitiesForUser(userId, friendId, pageable).map(splitActivityMapper::toDomain);
-        return activities.map(this::convertToActivityResponse);
+        return activities.map(activity -> convertToActivityResponse(activity, userId));
     }
 
     public List<SplitActivityResponse> getRecentActivities(String userId, int limit) {
         var entityPage = splitActivityRepository.findRecentActivitiesForUser(userId, org.springframework.data.domain.PageRequest.of(0, limit));
         List<SplitActivity> activities = entityPage.stream().map(splitActivityMapper::toDomain).collect(Collectors.toList());
         return activities.stream()
-            .map(this::convertToActivityResponse)
+            .map(activity -> convertToActivityResponse(activity, userId))
             .collect(Collectors.toList());
     }
 
@@ -303,7 +309,7 @@ public class SplitActivityService {
         return splitActivityRepository.findByActivityTypeAndUser(SplitActivityType.FRIEND_ADDED, userId, pageable).map(splitActivityMapper::toDomain);
     }
 
-    private SplitActivityResponse convertToActivityResponse(SplitActivity activity) {
+    private SplitActivityResponse convertToActivityResponse(SplitActivity activity, String currentUserId) {
         // Get actor details
         SplitActivityResponse.ActivityActor actor = null;
         Optional<User> actorUser = userRepository.findById(activity.getUserId());
@@ -331,6 +337,11 @@ public class SplitActivityService {
                 Group group = groupMapper.toDomain(groupEntityOpt.get());
                 context.setGroupId(group.getId());
                 context.setGroupName(group.getName());
+
+                // Calculate balance for this group from the current user's perspective
+                BalanceData balanceData = calculateGroupBalance(group.getId(), currentUserId);
+                context.setOverallPayingAmount(balanceData.getYouOwe());
+                context.setOverallReceivingAmount(balanceData.getOwesYou());
             }
         }
 
@@ -346,7 +357,7 @@ public class SplitActivityService {
         }
 
         // Generate human-readable message
-        String message = generateActivityMessage(activity, actor, target, context);
+        String message = generateActivityMessage(activity, actor, target, context, currentUserId);
 
         return new SplitActivityResponse(
             activity.getId(),
@@ -359,13 +370,79 @@ public class SplitActivityService {
         );
     }
 
+    /**
+     * Calculate balance data for a group from the perspective of the given user
+     */
+    private BalanceData calculateGroupBalance(Long groupId, String userId) {
+        // Get all expenses for this group
+        var groupExpenseEntities = splitExpenseRepository.findByGroupId(groupId);
+        List<SplitExpense> groupExpenses = groupExpenseEntities.stream()
+            .map(splitExpenseMapper::toDomain)
+            .collect(Collectors.toList());
+
+        BalanceData balanceData = new BalanceData();
+
+        for (SplitExpense expense : groupExpenses) {
+            var participantEntities = splitParticipantRepository.findBySplitExpenseId(expense.getId());
+            List<SplitParticipant> participants = participantEntities.stream()
+                .map(splitParticipantMapper::toDomain)
+                .collect(Collectors.toList());
+
+            Optional<SplitParticipant> userParticipant = participants.stream()
+                .filter(p -> p.getUserId().equals(userId))
+                .findFirst();
+
+            if (userParticipant.isPresent()) {
+                SplitParticipant myParticipation = userParticipant.get();
+
+                if (!myParticipation.isSettled()) {
+                    if (expense.getPaidByUserId().equals(userId)) {
+                        // I paid, others owe me
+                        BigDecimal othersOweMe = participants.stream()
+                            .filter(p -> !p.getUserId().equals(userId) && !p.isSettled())
+                            .map(SplitParticipant::getAmountOwed)
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                        balanceData.addOwesYou(othersOweMe);
+                    } else {
+                        // Someone else paid, I owe them
+                        balanceData.addYouOwe(myParticipation.getAmountOwed());
+                    }
+                }
+            }
+        }
+
+        return balanceData;
+    }
+
+    /**
+     * Helper class to track balance data
+     */
+    private static class BalanceData {
+        private BigDecimal youOwe = BigDecimal.ZERO;
+        private BigDecimal owesYou = BigDecimal.ZERO;
+
+        public BigDecimal getYouOwe() { return youOwe; }
+        public BigDecimal getOwesYou() { return owesYou; }
+
+        public void addYouOwe(BigDecimal amount) { this.youOwe = this.youOwe.add(amount); }
+        public void addOwesYou(BigDecimal amount) { this.owesYou = this.owesYou.add(amount); }
+    }
+
     private String generateActivityMessage(SplitActivity activity,
                                          SplitActivityResponse.ActivityActor actor,
                                          SplitActivityResponse.ActivityTarget target,
-                                         SplitActivityResponse.ActivityContext context) {
+                                         SplitActivityResponse.ActivityContext context,
+                                         String currentUserId) {
 
-        String actorName = actor != null ? actor.getUsername() : "Someone";
-        String targetName = target != null ? target.getUsername() : "someone";
+        // Use "You" if the actor is the current user, otherwise use their username
+        String actorName = (actor != null && actor.getUserId().equals(currentUserId))
+            ? "You"
+            : (actor != null ? actor.getUsername() : "Someone");
+
+        // Use "you" (lowercase) if the target is the current user
+        String targetName = (target != null && target.getUserId().equals(currentUserId))
+            ? "you"
+            : (target != null ? target.getUsername() : "someone");
 
         return switch (activity.getActivityType()) {
             case GROUP_CREATED -> actorName + " created group '" + (context.getGroupName() != null ? context.getGroupName() : "Unknown") + "'";
